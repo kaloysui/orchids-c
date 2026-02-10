@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { extractEmbedMaster, resolveFinalSource, decodeObfuscatedUrl, isObfuscatedUrl } from '@/lib/scraper';
 import { obfuscateUrl, generateSignature } from '@/lib/protection';
 
-export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 function wrapWithProxy(url: string, headers?: Record<string, string>): string {
@@ -60,8 +59,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     try {
       console.log(`[Movie API] Fetching sources for movie ID: ${id}`);
       
-      // Local sources are not supported on Edge runtime with FS
-      const localSources: any[] = [];
+    const localSources: any[] = [];
 
       const data = await extractEmbedMaster(`movie/${id}`);
       

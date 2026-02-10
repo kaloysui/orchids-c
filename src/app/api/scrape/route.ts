@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extractEmbedMaster, resolveSourceDirectly, decodeObfuscatedUrl, isObfuscatedUrl } from '@/lib/scraper';
 
-export const runtime = 'edge';
 
 export async function GET(req: NextRequest) {
   const url = req.nextUrl.searchParams.get('url');

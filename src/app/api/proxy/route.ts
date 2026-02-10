@@ -1,8 +1,7 @@
 import { NextRequest } from 'next/server';
 import { deobfuscateUrl, verifySignature, isAllowedRequest, obfuscateUrl, generateSignature } from '@/lib/protection';
 
-export const runtime = 'edge';
-export const preferredRegion = 'auto';
+
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { extractEmbedMaster, resolveFinalSource, decodeObfuscatedUrl, isObfuscatedUrl } from '@/lib/scraper';
 import { obfuscateUrl, generateSignature } from '@/lib/protection';
 
-export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 function wrapWithProxy(url: string, headers?: Record<string, string>): string {
@@ -63,8 +62,7 @@ export async function GET(
     try {
       console.log(`[TV API] Fetching sources for TV ${id} S${season}E${episode}`);
       
-      // Local sources are not supported on Edge runtime with FS
-      const localSources: any[] = [];
+    const localSources: any[] = [];
 
       const data = await extractEmbedMaster(`tv/${id}/${season}/${episode}`);
       

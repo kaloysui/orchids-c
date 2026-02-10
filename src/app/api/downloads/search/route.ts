@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export const runtime = 'edge';
 
 const TMDB_API_KEY = '3e20e76d6d210b6cb128d17d233b64dc';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
