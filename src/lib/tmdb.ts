@@ -2,8 +2,16 @@ const TMDB_API_KEY = "3e20e76d6d210b6cb128d17d233b64dc";
 const BASE_URL = "https://api.themoviedb.org/3";
 const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/original";
 
+import https from "https";
+
+// Production-safe fetch for TMDB
 async function tmdbFetch(url: string): Promise<Response> {
-  const res = await fetch(url, { next: { revalidate: 300 } });
+  // Create a default HTTPS agent to verify TMDB's SSL certificate
+  const agent = new https.Agent({
+    rejectUnauthorized: true, // normal SSL verification
+  });
+
+  const res = await fetch(url, { agent, next: { revalidate: 300 } });
   return res;
 }
 
