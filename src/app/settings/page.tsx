@@ -26,7 +26,7 @@ const themes = [
 
 const providers = [
   { id: "beech", name: "BCINE", description: "Recommended Auto play/Auto next" },
-  { id: "cedar", name: "CEDAR", description: "Recommended ra" },
+  { id: "cedar", name: "CEDAR", description: "Recommended" },
   { id: "buke", name: "BUKE", description: "Recommended Auto play" },
 ];
 
@@ -37,13 +37,13 @@ const providers = [
     const [mounted, setMounted] = React.useState(false);
 
     const [autoPlay, setAutoPlay] = React.useState(true);
-    const [defaultProvider, setDefaultProvider] = React.useState("beech");
+    const [defaultProvider, setDefaultProvider] = React.useState("buke");
     const [adsEnabled, setAdsEnabled] = React.useState(true);
   
     React.useEffect(() => {
       setMounted(true);
       const savedAutoPlay = localStorage.getItem("player_autoplay") !== "false";
-      let savedProvider = localStorage.getItem("player_provider") || "beech";
+      let savedProvider = localStorage.getItem("player_provider") || "buke";
     const savedAds = localStorage.getItem("ads_enabled") !== "false"; // Default to true
     
     // Migration logic
