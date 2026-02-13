@@ -3,6 +3,8 @@
   "createdAt": 1769943320980,
   "version": "1.0",
   "startupCommands": [
-    "bun install; bun run dev"
-  ]
+    "npm install; npm run dev"
+  ],
+  "templateId": "any",
+  "detectedFramework": "nextjs"
 }

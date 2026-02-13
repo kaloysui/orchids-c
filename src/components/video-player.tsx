@@ -67,6 +67,8 @@ export function VideoPlayer({
     const [subtitleText, setSubtitleText] = useState("");
     const [parsedSubtitles, setParsedSubtitles] = useState<any[]>([]);
     const [failedServers, setFailedServers] = useState<Set<number>>(new Set());
+    const stallTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const stallThreshold = 15000; // 15 seconds stall = auto-switch
 
   const ControlButton = memo(({ 
     children, 
@@ -294,7 +296,22 @@ export function VideoPlayer({
       }
     }, [currentServerIndex, servers, failedServers]);
 
-  const detectType = useCallback((url: string): "hls" | "mp4" => {
+  const clearStallTimer = useCallback(() => {
+      if (stallTimerRef.current) {
+        clearTimeout(stallTimerRef.current);
+        stallTimerRef.current = null;
+      }
+    }, []);
+
+    const startStallTimer = useCallback(() => {
+      clearStallTimer();
+      stallTimerRef.current = setTimeout(() => {
+        console.warn(`[VideoPlayer] Source stalled for ${stallThreshold / 1000}s, auto-switching server`);
+        handleServerError();
+      }, stallThreshold);
+    }, [clearStallTimer, handleServerError, stallThreshold]);
+
+    const detectType = useCallback((url: string): "hls" | "mp4" => {
     if (url.includes(".m3u8")) return "hls";
     return "mp4";
   }, []);
@@ -341,9 +358,11 @@ export function VideoPlayer({
           autoStartLoad: true,
         });
         hlsRef.current = hls;
-        hls.loadSource(currentServer.url);
-        hls.attachMedia(video);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          hls.loadSource(currentServer.url);
+          hls.attachMedia(video);
+          startStallTimer(); // detect stalled initial load
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            clearStallTimer();
           setQualityLevels(hls.levels);
           setCurrentQuality(hls.currentLevel);
           setAudioTracks(hls.audioTracks);
@@ -376,12 +395,13 @@ export function VideoPlayer({
       }
 
     return () => {
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-        hlsRef.current = null;
-      }
-    };
-  }, [currentServer, autoPlay, handleServerError]);
+        clearStallTimer();
+        if (hlsRef.current) {
+          hlsRef.current.destroy();
+          hlsRef.current = null;
+        }
+      };
+    }, [currentServer, autoPlay, handleServerError]);
 
   // Convert SRT text to VTT blob URL for native <track> elements (iOS fullscreen)
   const srtToVttBlobUrl = useCallback((srt: string): string => {
@@ -503,8 +523,9 @@ export function VideoPlayer({
   }, [isPlaying]);
 
   const handleTimeUpdate = useCallback(() => {
-    if (videoRef.current) {
-      const time = videoRef.current.currentTime;
+      if (videoRef.current) {
+        clearStallTimer();
+        const time = videoRef.current.currentTime;
       const dur = videoRef.current.duration;
       setCurrentTime(time);
       lastStateRef.current.currentTime = time;
@@ -1316,8 +1337,9 @@ export function VideoPlayer({
           onLoadedMetadata={() => setDuration(videoRef.current?.duration || 0)}
           onPlay={() => { setIsPlaying(true); lastStateRef.current.isPlaying = true; watchParty.sendPlay(videoRef.current?.currentTime || 0); }}
           onPause={() => { setIsPlaying(false); lastStateRef.current.isPlaying = false; watchParty.sendPause(videoRef.current?.currentTime || 0); }}
-                onWaiting={() => setIsBuffering(true)}
+                onWaiting={() => { setIsBuffering(true); startStallTimer(); }}
             onCanPlay={() => {
+              clearStallTimer();
               setIsBuffering(false);
               setIsSwitchingSource(false);
               if (autoPlay) {
