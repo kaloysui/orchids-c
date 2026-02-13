@@ -43,7 +43,7 @@ export function Player({ type, tmdbId, season, episode, onBack }: PlayerProps) {
   const { theme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
   const [playerMode, setPlayerMode] = React.useState<"native" | "legacy">("legacy");
-    const [provider, setProvider] = React.useState("buke");
+    const [provider, setProvider] = React.useState("beech");
     const [autoPlay, setAutoPlay] = React.useState(true);
     const { saveItem } = useContinueWatching();
     const [mediaDetails, setMediaDetails] = React.useState<any>(null);
