@@ -38,10 +38,10 @@ export async function extractEmbedMaster(url: string) {
   let primaryBaseUrl = '';
 
     const providers = [
-        { name: 'ZXCPRIME', fn: () => tryZxcPrime(path), priority: 1 },
+        { name: 'ZXCPRIME', fn: () => tryZxcPrime(path), priority: 0 },
         {name: 'VIDZEE', fn: () => tryVidzee(path), priority: 2 },
         { name: 'BCINE', fn: () => tryBCine(path), priority: 3 },
-        { name: 'VIDEASY', fn: () => tryVideasy(path), priority: 0 },
+        { name: 'VIDEASY', fn: () => tryVideasy(path), priority: 1 },
       ];
 
     // Wait for all results and aggregate
