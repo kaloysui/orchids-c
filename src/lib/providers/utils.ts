@@ -26,8 +26,20 @@ export async function fastFetch(url: string, options: RequestInit = {}, timeout 
     'Accept-Language': 'en-US,en;q=0.9',
   };
 
+  // If caller already passed a signal, use it; otherwise create our own timeout
+  const externalSignal = options.signal as AbortSignal | undefined;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+  // Link external signal to our controller
+  if (externalSignal) {
+    if (externalSignal.aborted) {
+      clearTimeout(timeoutId);
+      controller.abort();
+    } else {
+      externalSignal.addEventListener('abort', () => controller.abort(), { once: true });
+    }
+  }
 
   try {
     const response = await fetch(url, {
