@@ -1,70 +1,29 @@
 import { EmbedSource, USER_AGENT, robustFetch } from './utils';
 import { getMediaDetails } from '../tmdb';
+import crypto from 'crypto';
 
-const ZXC_BASE = 'https://www.zxcprime.icu';
+const ZXC_BASE = 'https://www.zxcstream.xyz';
 
-// Servers that require a backend token
-const TOKEN_SERVERS = [
+const SERVERS = [
   { id: 11, name: 'Icarus' },
-  { id: 1,  name: 'Thanatos' },
-  { id: 3,  name: 'Orion' },
   { id: 0,  name: 'Daedalus' },
+  { id: 1,  name: 'Thanatos' },
   { id: 2,  name: 'Aether' },
+  { id: 3,  name: 'Orion' },
   { id: 4,  name: 'Helios' },
-  { id: 5,  name: 'Zephyr' },
   { id: 6,  name: 'Echo' },
   { id: 7,  name: 'Morpheus' },
 ];
 
-// Xpass servers — no token needed, just tmdbId
-const XPASS_SERVERS = [
-  {
-    id: 50,
-    name: 'ZXC Hypnos',
-    getUrl: (tmdbId: string, isTV: boolean, season?: string, episode?: string) =>
-      isTV
-        ? `https://play.xpass.top/mov/${tmdbId}/${season}/${episode}/0/playlist.json`
-        : `https://play.xpass.top/mov/${tmdbId}/0/0/0/playlist.json`,
-  },
-  {
-    id: 60,
-    name: 'ZXC Kairos',
-    getUrl: (tmdbId: string, isTV: boolean, season?: string, episode?: string) =>
-      isTV
-        ? `https://play.xpass.top/meg/tv/${tmdbId}/${season}/${episode}/playlist.json`
-        : `https://play.xpass.top/meg/movie/${tmdbId}/0/0/playlist.json`,
-  },
-  {
-    id: 70,
-    name: 'ZXC Atlas',
-    getUrl: (tmdbId: string, isTV: boolean, season?: string, episode?: string) =>
-      isTV
-        ? `https://play.xpass.top/box/tv/${tmdbId}/${season}/${episode}/playlist.json`
-        : `https://play.xpass.top/box/movie/${tmdbId}/0/0/playlist.json`,
-  },
-];
+function generateFrontendToken(id: string): { f_token: string; f_ts: number } {
+  const ts = Date.now();
+  const f_token = crypto.createHash('sha256').update(`${id}:${ts}`).digest('hex');
+  return { f_token, f_ts: ts };
+}
 
-async function getApiToken(
-  tmdbId: string,
-  mediaType: 'movie' | 'tv',
-  imdbId: string,
-  title: string,
-  year: string,
-  season?: string,
-  episode?: string,
-): Promise<{ token: string; signature: string } | null> {
+async function getApiToken(tmdbId: string, f_token: string, f_ts: number): Promise<{ token: string; ts: number } | null> {
   try {
-    const body: Record<string, string> = {
-      id: tmdbId,
-      media_type: mediaType,
-      imdbId,
-      title,
-      year,
-    };
-    if (mediaType === 'tv' && season) body.season = season;
-    if (mediaType === 'tv' && episode) body.episode = episode;
-
-    const res = await robustFetch(`${ZXC_BASE}/zxcprime-backend/token`, {
+    const res = await robustFetch(`${ZXC_BASE}/api/token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -72,35 +31,35 @@ async function getApiToken(
         'Referer': `${ZXC_BASE}/`,
         'Origin': ZXC_BASE,
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ idd: tmdbId, f_token, ts: f_ts }),
     }, 1, 10000);
 
     if (!res.ok) return null;
-    const data = await res.json();
-    if (!data?.token || !data?.signature) return null;
-    return { token: data.token, signature: data.signature };
+    return await res.json();
   } catch {
     return null;
   }
 }
 
-async function fetchTokenServer(
+async function fetchServerSource(
   serverId: number,
-  serverName: string,
   tmdbId: string,
   mediaType: 'movie' | 'tv',
   imdbId: string,
+  token: string,
+  tokenTs: number,
+  f_token: string,
   title: string,
   year: string,
   season?: string,
   episode?: string,
-): Promise<EmbedSource | null> {
+): Promise<{ success: boolean; link?: string; type?: string } | null> {
   try {
-    const apiToken = await getApiToken(tmdbId, mediaType, imdbId, title, year, season, episode);
-    if (!apiToken) return null;
-
-    const encodedToken = encodeURIComponent(apiToken.token);
-    const url = `${ZXC_BASE}/zxcprime-backend/${serverId}?data=${encodedToken}&sig=${apiToken.signature}`;
+    let url = `${ZXC_BASE}/api/${serverId}?a=${tmdbId}&b=${mediaType}`;
+    if (mediaType === 'tv') {
+      url += `&c=${season}&d=${episode}`;
+    }
+    url += `&e=${imdbId}&gago=${tokenTs}&putanginamo=${token}&f_token=${f_token}&f=${encodeURIComponent(title)}&g=${year}`;
 
     const res = await robustFetch(url, {
       headers: {
@@ -111,59 +70,17 @@ async function fetchTokenServer(
     }, 1, 15000);
 
     if (!res.ok) return null;
-    const data = await res.json();
-    if (!data?.link || data.link.includes('/video/error') || data.success === false) return null;
-
-    const link: string = data.link.startsWith('/') ? `${ZXC_BASE}${data.link}` : data.link;
-    const type = data.type === 'mp4' ? 'mp4' : 'hls';
-
-    return {
-      id: 0,
-      name: `ZXC ${serverName}`,
-      quality: serverId === 2 ? '4K' : 'Auto',
-      title: `ZXC ${serverName}`,
-      url: link,
-      type,
-      useProxy: false,
-      headers: {
-        'Referer': `${ZXC_BASE}/`,
-        'Origin': ZXC_BASE,
-      },
-    } as EmbedSource;
+    return await res.json();
   } catch {
     return null;
   }
 }
 
-async function fetchXpassServer(
-  server: typeof XPASS_SERVERS[0],
-  tmdbId: string,
-  isTV: boolean,
-  season?: string,
-  episode?: string,
-): Promise<EmbedSource | null> {
-  try {
-    const url = server.getUrl(tmdbId, isTV, season, episode);
-    const res = await robustFetch(url, {
-      headers: { 'User-Agent': USER_AGENT },
-    }, 1, 10000);
-    if (!res.ok) return null;
-    const data = await res.json();
-    const source = data?.playlist?.at(-1)?.sources?.at(-1);
-    if (!source?.file) return null;
-
-    return {
-      id: 0,
-      name: server.name,
-      quality: 'Auto',
-      title: server.name,
-      url: source.file,
-      type: source.type === 'mp4' ? 'mp4' : 'hls',
-      useProxy: false,
-    } as EmbedSource;
-  } catch {
-    return null;
-  }
+function resolveLink(data: { link?: string; type?: string } | null): { url: string; type: string } | null {
+  if (!data?.link) return null;
+  const link = data.link.startsWith('/') ? `${ZXC_BASE}${data.link}` : data.link;
+  const type = data.type === 'mp4' ? 'mp4' : 'hls';
+  return { url: link, type };
 }
 
 export async function tryZxcPrime(path: string): Promise<{ sources: EmbedSource[], baseUrl: string } | null> {
@@ -184,7 +101,7 @@ export async function tryZxcPrime(path: string): Promise<{ sources: EmbedSource[
 
     console.log('[Scraper] Trying zxcprime for:', path);
 
-    // Get TMDB details for imdbId, title, year
+    // Get TMDB details for IMDB ID, title, year
     let imdbId = '';
     let title = '';
     let year = '';
@@ -207,27 +124,77 @@ export async function tryZxcPrime(path: string): Promise<{ sources: EmbedSource[
       return null;
     }
 
-    // Each token server needs its own fresh token (tokens are single-use)
-    const tokenServerFetches = TOKEN_SERVERS.map((server) =>
-      fetchTokenServer(
-        server.id,
-        server.name,
-        tmdbId,
-        isTV ? 'tv' : 'movie',
-        imdbId,
-        title,
-        year,
-        season,
-        episode,
-      )
-    );
+    // Get authentication tokens
+    const { f_token, f_ts } = generateFrontendToken(tmdbId);
+    const apiToken = await getApiToken(tmdbId, f_token, f_ts);
+    if (!apiToken) {
+      console.log('[Scraper] zxcprime: failed to get API token');
+      return null;
+    }
 
-    // Xpass servers use tmdbId directly — no token needed
-    const xpassFetches = XPASS_SERVERS.map((server) =>
-      fetchXpassServer(server, tmdbId, isTV, season, episode)
-    );
+    // Fetch all servers in parallel
+    const serverFetches = SERVERS.map(async (server) => {
+      const data = await fetchServerSource(
+        server.id, tmdbId, isTV ? 'tv' : 'movie', imdbId,
+        apiToken.token, apiToken.ts, f_token,
+        title, year, season, episode,
+      );
+      const resolved = resolveLink(data);
+      if (!resolved) return null;
 
-    const results = await Promise.allSettled([...tokenServerFetches, ...xpassFetches]);
+      return {
+        id: 0,
+        name: `ZXC ${server.name}`,
+        quality: server.id === 2 ? '4K' : 'Auto',
+        title: `ZXC ${server.name}`,
+        url: resolved.url,
+        type: resolved.type === 'mp4' ? 'mp4' : 'hls',
+        useProxy: false,
+        headers: {
+          'Referer': `${ZXC_BASE}/`,
+          'Origin': ZXC_BASE,
+        },
+      } as EmbedSource;
+    });
+
+    // Also fetch xpass servers (no token needed)
+    const xpassFetches = [
+      {
+        name: 'ZXC Hypnos',
+        getUrl: () => isTV
+          ? `https://play.xpass.top/mov/${tmdbId}/${season}/${episode}/0/playlist.json`
+          : `https://play.xpass.top/mov/${tmdbId}/0/0/0/playlist.json`,
+      },
+      {
+        name: 'ZXC Kairos',
+        getUrl: () => isTV
+          ? `https://play.xpass.top/meg/tv/${tmdbId}/${season}/${episode}/playlist.json`
+          : `https://play.xpass.top/meg/movie/${tmdbId}/0/0/playlist.json`,
+      },
+    ].map(async (xp) => {
+      try {
+        const res = await robustFetch(xp.getUrl(), {
+          headers: { 'User-Agent': USER_AGENT },
+        }, 1, 10000);
+        if (!res.ok) return null;
+        const data = await res.json();
+        const source = data?.playlist?.at(-1)?.sources?.at(-1);
+        if (!source?.file) return null;
+        return {
+          id: 0,
+          name: xp.name,
+          quality: 'Auto',
+          title: xp.name,
+          url: source.file,
+          type: source.type === 'mp4' ? 'mp4' : 'hls',
+          useProxy: false,
+        } as EmbedSource;
+      } catch {
+        return null;
+      }
+    });
+
+    const results = await Promise.allSettled([...serverFetches, ...xpassFetches]);
 
     const sources: EmbedSource[] = [];
     let sourceId = 1;
