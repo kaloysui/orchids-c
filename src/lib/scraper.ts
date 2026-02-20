@@ -3,6 +3,7 @@ import { tryVideasy } from './providers/videasy';
 import { tryBCine } from './providers/bcine';
 import { tryZxcPrime } from './providers/zxcprime';
 import { tryPoprink } from './providers/poprink';
+import { tryAmri } from './providers/amri';
 import { EmbedSource, robustFetch } from './providers/utils';
 import { Track } from '@/components/netplayer/types/player';
 
@@ -44,6 +45,7 @@ export async function extractEmbedMaster(url: string) {
             { name: 'BCINE', fn: () => tryBCine(path), priority: 3 },
             { name: 'VIDEASY', fn: () => tryVideasy(path), priority: 1 },
             { name: 'POPRINK', fn: () => tryPoprink(path), priority: 4 },
+            { name: 'AMRI', fn: () => tryAmri(path), priority: 5 },
           ];
 
     // Wait for all results and aggregate
