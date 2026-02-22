@@ -36,15 +36,15 @@ export async function tryBCine(path: string): Promise<{ sources: EmbedSource[], 
     }
     
     // Test multiple bCine domains
-    const domains = ['scrennnifu.click', 'bcine.click', 'bcine.xyz'];
+    const domains = ['bidsrc.pro', 'bcine.click', 'bcine.xyz'];
     const sources: EmbedSource[] = [];
     
     // For bCine, we usually just return the URL because it's a direct m3u8 generator
     // but we can at least check if the domain is reachable
     
     const playlistUrl = isTV 
-      ? `https://scrennnifu.click/serial/${imdbId}/${season}/${episode}/playlist.m3u8`
-      : `https://scrennnifu.click/movie/${imdbId}/playlist.m3u8`;
+      ? `https://bidsrc.pro/serial/${imdbId}/${season}/${episode}/playlist.m3u8`
+      : `https://bidsrc.pro/movie/${imdbId}/playlist.m3u8`;
     
     console.log('[Scraper] Returning bCine source:', playlistUrl);
 
@@ -58,12 +58,12 @@ export async function tryBCine(path: string): Promise<{ sources: EmbedSource[], 
       useProxy: false,
       flag: 'US',
       headers: {
-        'Referer': 'https://scrennnifu.click/',
-        'Origin': 'https://scrennnifu.click'
+        'Referer': 'https://bidsrc.pro/',
+        'Origin': 'https://bidsrc.pro'
       }
     });
 
-    return { sources, baseUrl: 'https://scrennnifu.click' };
+    return { sources, baseUrl: 'https://bidsrc.pro' };
   } catch (e) {
     console.error('[Scraper] bCine error:', e);
     return null;
