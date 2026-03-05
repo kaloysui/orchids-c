@@ -123,7 +123,7 @@ export async function tryPoprink(path: string): Promise<{ sources: EmbedSource[]
             title: `${server.name} (${src.quality || 'auto'})`,
             url: srcUrl,
             type: isHls ? 'hls' : 'mp4',
-            useProxy: true,
+            useProxy: false,
             headers,
           });
         }
