@@ -4,7 +4,7 @@ const AMRI_BASE = 'https://amri.gg';
 const AMRI_API_KEY = 'your-shared-secret';
 const AMRI_TIMEOUT_SESSION = 6000;
 const AMRI_TIMEOUT_SOURCES = 12000;
-const AMRI_MAX_SOURCES = 20;
+const AMRI_MAX_SOURCES = 10;
 
 function parseQuality(title: string): string {
   const t = title.toLowerCase();
