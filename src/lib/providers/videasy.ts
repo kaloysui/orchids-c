@@ -1,6 +1,6 @@
 import { EmbedSource, USER_AGENT, robustFetch } from './utils';
 
-const VIDEASY_API = 'https://api.videasy.net';
+const VIDEASY_API = 'https://api2.videasy.net';
 const DECRYPT_API = 'https://enc-dec.app/api/dec-videasy';
 const TMDB_API_KEY = '3e20e76d6d210b6cb128d17d233b64dc';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
