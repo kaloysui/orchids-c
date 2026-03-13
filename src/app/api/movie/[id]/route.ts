@@ -98,7 +98,7 @@ const resolvedSources = await Promise.all(
                   };
                 }
               
-              if ((source.type === 'hls' || source.type === 'mp4') && sourceUrl.startsWith('http')) {
+              if ((source.type === 'hls' || source.type === 'm3u8' || source.type === 'mp4') && sourceUrl.startsWith('http')) {
                 return {
                   url: sourceUrl,
                   type: source.type === 'hls' ? 'm3u8' : source.type,
