@@ -1,6 +1,5 @@
 import { tryZxcPrime } from './providers/zxcprime';
 import { tryPoprink } from './providers/poprink';
-import { tryPeachify } from './providers/peachify';
 import { EmbedSource, robustFetch } from './providers/utils';
 import { Track } from '@/components/netplayer/types/player';
 
@@ -39,7 +38,6 @@ export async function extractEmbedMaster(url: string) {
         const providers = [
             { name: 'ZXCPRIME', fn: () => tryZxcPrime(path), priority: 0 },
             { name: 'POPRINK', fn: () => tryPoprink(path), priority: 1 },
-          { name: 'PEACHIFY', fn: () => tryPeachify(path), priority: 2 },
           
           ];
 
