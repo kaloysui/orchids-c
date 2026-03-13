@@ -1,5 +1,6 @@
 import { tryZxcPrime } from './providers/zxcprime';
 import { tryPoprink } from './providers/poprink';
+import { tryCinemaOS } from './providers/cinemaos';
 import { EmbedSource, robustFetch } from './providers/utils';
 import { Track } from '@/components/netplayer/types/player';
 
@@ -38,6 +39,8 @@ export async function extractEmbedMaster(url: string) {
         const providers = [
             { name: 'ZXCPRIME', fn: () => tryZxcPrime(path), priority: 0 },
             { name: 'POPRINK', fn: () => tryPoprink(path), priority: 1 },
+          { name: 'CINEMAOS', fn: () => tryCinemaos(path), priority: 2 },
+          
           ];
 
     // Wait for all results and aggregate
