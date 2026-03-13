@@ -1,7 +1,6 @@
 import { tryVidzee } from './providers/vidzee';
 import { tryZxcPrime } from './providers/zxcprime';
 import { tryPoprink } from './providers/poprink';
-import { tryAmri } from './providers/amri';
 import { EmbedSource, robustFetch } from './providers/utils';
 import { Track } from '@/components/netplayer/types/player';
 
