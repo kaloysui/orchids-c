@@ -1,7 +1,5 @@
-import { tryVidzee } from './providers/vidzee';
-import { tryZxcPrime } from './providers/zxcprime';
+import { tryPeachify } from './providers/peachify';
 import { tryPoprink } from './providers/poprink';
-import { tryAmri } from './providers/amri';
 import { EmbedSource, robustFetch } from './providers/utils';
 import { Track } from '@/components/netplayer/types/player';
 
@@ -38,11 +36,9 @@ export async function extractEmbedMaster(url: string) {
   let primaryBaseUrl = '';
 
         const providers = [
-            { name: 'ZXCPRIME', fn: () => tryZxcPrime(path), priority: 0 },
-            { name: 'VIDZEE', fn: () => tryVidzee(path), priority: 3 },
-            { name: 'POPRINK', fn: () => tryPoprink(path), priority: 1 },
-            { name: 'AMRI', fn: () => tryAmri(path), priority: 2 },
-          ];
+    { name: 'POPRINK', fn: () => tryPoprink(path), priority: 0 },
+    { name: 'PEACHIFY', fn: () => tryPeachify(path), priority: 1 },
+  ];
 
     // Wait for all results and aggregate
     const aggregateResults = async () => {
