@@ -8,7 +8,7 @@ module.exports = {
       exec_mode: "cluster",       // cluster mode for load balancing
       autorestart: true,          // auto-restart kung mo-crash
       watch: false,               // disable watch sa production
-      max_memory_restart: "800M", // auto-restart kung mo-abot sa 300MB
+      max_memory_restart: "2G", // auto-restart kung mo-abot sa 300MB
       env: {
         NODE_ENV: "production"
       }
