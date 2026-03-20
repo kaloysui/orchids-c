@@ -57,7 +57,7 @@ function parseOnehd(data: any, name: string): EmbedSource[] {
     id: 0, name, quality: 'auto', title: name,
     url: data.url,
     type: data.url.includes('.m3u8') ? 'hls' : 'mp4',
-    useProxy: true,
+    useProxy: false,
     headers: data.headers || {},
   }];
 }
@@ -71,7 +71,7 @@ function parseSigma(data: any, name: string): EmbedSource[] {
       id: 0, name, quality: s.label || 'auto', title: `${name} (${s.label || 'auto'})`,
       url: s.file,
       type: s.type === 'hls' || s.file.includes('.m3u8') ? 'hls' : 'mp4',
-      useProxy: true,
+      useProxy: false,
       headers: {},
     }));
 }
@@ -86,7 +86,7 @@ function parseStreams(data: any, name: string): EmbedSource[] {
       title: `${name} (${s.language || s.quality || 'auto'})`,
       url: s.url,
       type: s.type === 'hls' || s.url.includes('.m3u8') ? 'hls' : 'mp4',
-      useProxy: true,
+      useProxy: false,
       headers: s.headers || {},
     }));
 }
@@ -100,7 +100,7 @@ function parseMoviebox(data: any, name: string): EmbedSource[] {
       id: 0, name, quality: u.resolution || 'auto', title: `${name} (${u.resolution || 'auto'}p)`,
       url: u.link,
       type: u.link.includes('.m3u8') ? 'hls' : 'mp4',
-      useProxy: true,
+      useProxy: false,
       headers: data.headers || {},
     }));
 }
@@ -113,7 +113,7 @@ function parseHexa(data: any, name: string): EmbedSource[] {
     id: 0, name, quality: 'auto', title: name,
     url: playlist,
     type: 'hls',
-    useProxy: true,
+    useProxy: false,
     headers: data.headers || {},
   }];
 }
