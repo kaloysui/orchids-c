@@ -43,7 +43,7 @@ const providers = [
     React.useEffect(() => {
       setMounted(true);
       const savedAutoPlay = localStorage.getItem("player_autoplay") !== "false";
-      let savedProvider = localStorage.getItem("player_provider") || "beech";
+      let savedProvider = localStorage.getItem("player_provider") || "buke";
     const savedAds = localStorage.getItem("ads_enabled") !== "false"; // Default to true
     
     // Migration logic
