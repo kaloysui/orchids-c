@@ -57,7 +57,7 @@ function parseOnehd(data: any, name: string): EmbedSource[] {
     id: 0, name, quality: 'auto', title: name,
     url: data.url,
     type: data.url.includes('.m3u8') ? 'hls' : 'mp4',
-    useProxy: false,
+    useProxy: true,
     headers: data.headers || {},
   }];
 }
