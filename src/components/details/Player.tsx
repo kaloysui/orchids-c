@@ -43,7 +43,7 @@ export function Player({ type, tmdbId, season, episode, onBack }: PlayerProps) {
   const { theme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
   const [playerMode, setPlayerMode] = React.useState<"native" | "legacy">("legacy");
-    const [provider, setProvider] = React.useState("buke");
+    const [provider, setProvider] = React.useState("beech");
     const [autoPlay, setAutoPlay] = React.useState(true);
     const { saveItem } = useContinueWatching();
     const [mediaDetails, setMediaDetails] = React.useState<any>(null);
@@ -55,7 +55,7 @@ export function Player({ type, tmdbId, season, episode, onBack }: PlayerProps) {
     const providerUrls: Record<string, string> = {
       beech: "native",
       cedar: "https://player.videasy.net",
-      buke: "https://embedmaster.link",
+      buke: "https://vidsrc.cc",
     };
 
     React.useEffect(() => {
@@ -127,7 +127,7 @@ export function Player({ type, tmdbId, season, episode, onBack }: PlayerProps) {
       } else {
         // Default to BUKE (VIDSRC)
         const baseUrl = type === "movie"
-          ? `https://embedmaster.link/71q0q5j5pc4fhtyk/movie/${id}`
+          ? `https://embedmaster.link/71q0q5j5pc4fhtyk/movie/${tmdbId}`
           : `https://embedmaster.link/71q0q5j5pc4fhtyk/tv/${tmdbId}/${currentSeason}/${currentEpisode}`;
         return `${baseUrl}?color=${color}&auto_play=${autoPlay ? "1" : "0"}`;
       }
@@ -297,4 +297,3 @@ export function Player({ type, tmdbId, season, episode, onBack }: PlayerProps) {
     </motion.div>
   );
 }
-
