@@ -37,7 +37,7 @@ const providers = [
     const [mounted, setMounted] = React.useState(false);
 
     const [autoPlay, setAutoPlay] = React.useState(true);
-    const [defaultProvider, setDefaultProvider] = React.useState("beech");
+    const [defaultProvider, setDefaultProvider] = React.useState("buke");
     const [adsEnabled, setAdsEnabled] = React.useState(true);
   
     React.useEffect(() => {
