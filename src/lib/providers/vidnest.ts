@@ -3,7 +3,6 @@ import { EmbedSource, USER_AGENT, robustFetch } from './utils';
 const BASE = 'https://new.vidnest.fun';
 const REFERER = 'https://vidnest.fun/';
 
-// Custom base64 alphabet used by vidnest's decryptCipherResponse
 const VIDNEST_ALPHABET = 'RB0fpH8ZEyVLkv7c2i6MAJ5u3IKFDxlS1NTsnGaqmXYdUrtzjwObCgQP94hoeW+/=';
 
 function decodeVidnest(encoded: string): any {
@@ -38,87 +37,101 @@ async function fetchAndDecode(url: string): Promise<any | null> {
         'Origin': 'https://vidnest.fun',
       },
     }, 1, 12000);
+
     if (!res.ok) return null;
+
     const json = await res.json();
     if (json.encrypted && typeof json.data === 'string') {
       return decodeVidnest(json.data);
     }
+
     return json;
   } catch {
     return null;
   }
 }
 
-// Response-shape handlers — each returns EmbedSource[] or []
+// ================= PARSERS =================
+
 function parseOnehd(data: any, name: string): EmbedSource[] {
-  // { url, headers?, subtitles? }
   if (!data?.url) return [];
   return [{
-    id: 0, name, quality: 'auto', title: name,
+    id: 0,
+    name,
+    quality: 'auto',
+    title: name,
     url: data.url,
     type: data.url.includes('.m3u8') ? 'hls' : 'mp4',
-    useProxy: false,
-    headers: data.headers || {},
+    useProxy: true,
+    headers: { Referer: REFERER, Origin: 'https://vidnest.fun', ...data.headers },
   }];
 }
 
 function parseSigma(data: any, name: string): EmbedSource[] {
-  // { sources: [{ file, label, type }] }
   if (!Array.isArray(data?.sources)) return [];
   return data.sources
     .filter((s: any) => s?.file)
     .map((s: any) => ({
-      id: 0, name, quality: s.label || 'auto', title: `${name} (${s.label || 'auto'})`,
+      id: 0,
+      name,
+      quality: s.label || 'auto',
+      title: `${name} (${s.label || 'auto'})`,
       url: s.file,
       type: s.type === 'hls' || s.file.includes('.m3u8') ? 'hls' : 'mp4',
-      useProxy: false,
-      headers: {},
+      useProxy: true,
+      headers: { Referer: REFERER, Origin: 'https://vidnest.fun', ...data.headers },
     }));
 }
 
 function parseStreams(data: any, name: string): EmbedSource[] {
-  // { streams: [{ url, type, language, headers? }] }
   if (!Array.isArray(data?.streams)) return [];
   return data.streams
     .filter((s: any) => s?.url)
     .map((s: any) => ({
-      id: 0, name, quality: s.quality || s.language || 'auto',
+      id: 0,
+      name,
+      quality: s.quality || s.language || 'auto',
       title: `${name} (${s.language || s.quality || 'auto'})`,
       url: s.url,
       type: s.type === 'hls' || s.url.includes('.m3u8') ? 'hls' : 'mp4',
-      useProxy: false,
-      headers: s.headers || {},
+      useProxy: true,
+      headers: { Referer: REFERER, Origin: 'https://vidnest.fun', ...data.headers },
     }));
 }
 
 function parseMoviebox(data: any, name: string): EmbedSource[] {
-  // { url: [{ link, resolution, type }], headers? }
   if (!Array.isArray(data?.url)) return [];
   return data.url
     .filter((u: any) => u?.link)
     .map((u: any) => ({
-      id: 0, name, quality: u.resolution || 'auto', title: `${name} (${u.resolution || 'auto'}p)`,
+      id: 0,
+      name,
+      quality: u.resolution || 'auto',
+      title: `${name} (${u.resolution || 'auto'}p)`,
       url: u.link,
       type: u.link.includes('.m3u8') ? 'hls' : 'mp4',
-      useProxy: false,
-      headers: data.headers || {},
+      useProxy: true,
+      headers: { Referer: REFERER, Origin: 'https://vidnest.fun', ...data.headers },
     }));
 }
 
 function parseHexa(data: any, name: string): EmbedSource[] {
-  // { data: { stream: { playlist, captions? } }, headers? }
   const playlist = data?.data?.stream?.playlist;
   if (!playlist) return [];
   return [{
-    id: 0, name, quality: 'auto', title: name,
+    id: 0,
+    name,
+    quality: 'auto',
+    title: name,
     url: playlist,
     type: 'hls',
-    useProxy: false,
-    headers: data.headers || {},
+    useProxy: true,
+    headers: { Referer: REFERER, Origin: 'https://vidnest.fun', ...data.headers },
   }];
 }
 
-// Server definitions
+// ================= SERVERS =================
+
 interface ServerDef {
   name: string;
   movie: string;
@@ -169,6 +182,8 @@ const SERVERS: ServerDef[] = [
   },
 ];
 
+// ================= MAIN =================
+
 export async function tryVidnest(
   path: string
 ): Promise<{ sources: EmbedSource[]; baseUrl: string } | null> {
@@ -187,14 +202,11 @@ export async function tryVidnest(
       tmdbId = path.replace('movie/', '');
     }
 
-    console.log('[Scraper] Trying vidnest for:', path);
-
     const fetchServer = async (server: ServerDef): Promise<EmbedSource[]> => {
       try {
         const baseUrl = isTV ? server.tv : server.movie;
-        const suffix = isTV
-          ? (server.tvSuffix || '')
-          : (server.movieSuffix || '');
+        const suffix = isTV ? (server.tvSuffix || '') : (server.movieSuffix || '');
+
         const url = isTV
           ? `${baseUrl}/${tmdbId}/${season}/${episode}${suffix}`
           : `${baseUrl}/${tmdbId}${suffix}`;
@@ -202,10 +214,8 @@ export async function tryVidnest(
         const data = await fetchAndDecode(url);
         if (!data) return [];
 
-        const sources = server.parse(data, server.name);
-        return sources;
-      } catch (e) {
-        console.log(`[Vidnest] ${server.name} error:`, e);
+        return server.parse(data, server.name);
+      } catch {
         return [];
       }
     };
@@ -214,6 +224,7 @@ export async function tryVidnest(
 
     const sources: EmbedSource[] = [];
     let id = 1;
+
     for (const r of results) {
       if (r.status === 'fulfilled') {
         for (const s of r.value) {
@@ -222,10 +233,11 @@ export async function tryVidnest(
       }
     }
 
-    console.log(`[Scraper] vidnest found ${sources.length} sources`);
-    return sources.length > 0 ? { sources, baseUrl: 'https://vidnest.fun' } : null;
-  } catch (e) {
-    console.error('[Scraper] vidnest error:', e);
+    return sources.length > 0
+      ? { sources, baseUrl: 'https://vidnest.fun' }
+      : null;
+
+  } catch {
     return null;
   }
 }
