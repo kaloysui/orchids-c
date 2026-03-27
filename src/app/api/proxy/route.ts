@@ -49,7 +49,8 @@ export async function GET(req: NextRequest) {
     const isBunny = hostname.includes('workers.dev') || hostname.includes('bunny');
     const isVidify = hostname.includes('vidify.top') || hostname.includes('apiv2.vidify.top') || hostname.includes('player.vidify.top') || hostname.includes('rivestream.app');
     const isVidzee = hostname.includes('rabbitstream') || hostname.includes('megacloud') || hostname.includes('dokicloud') || hostname.includes('vizcloud') || hostname.includes('rapid-cloud') || hostname.includes('1shows.app') || hostname.includes('67streams.online') || hostname.includes('veyda') || hostname.includes('vidzee.wtf');
-
+    const isVidnest = hostname.includes('vidnest') || hostname.includes('hollymoviehd') || hostname.includes('animanga.fun') || hostname.includes('vidlink') || hostname.includes('ophim') || hostname.includes('allmovies') || hostname.includes('onehd') || hostname.includes('moviebox');
+    
     const headers: Record<string, string> = {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
       'Accept': '*/*',
@@ -76,6 +77,9 @@ export async function GET(req: NextRequest) {
     } else if (isBunny) {
       headers['Referer'] = 'https://embdmstrplayer.com/';
       headers['Origin'] = 'https://embdmstrplayer.com';
+          } else if (isVidnest) {
+      headers['Referer'] = 'https://vidnest.fun/';
+      headers['Origin'] = 'https://vidnest.fun';
     } else {
       // Default to target origin if not specified
       headers['Referer'] = targetUrl.origin + '/';
