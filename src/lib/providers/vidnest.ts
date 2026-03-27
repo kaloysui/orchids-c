@@ -62,7 +62,7 @@ function parseOnehd(data: any, name: string): EmbedSource[] {
     title: name,
     url: data.url,
     type: data.url.includes('.m3u8') ? 'hls' : 'mp4',
-    useProxy: true,
+    useProxy: false,
     headers: { Referer: REFERER, Origin: 'https://vidnest.fun', ...data.headers },
   }];
 }
@@ -78,7 +78,7 @@ function parseSigma(data: any, name: string): EmbedSource[] {
       title: `${name} (${s.label || 'auto'})`,
       url: s.file,
       type: s.type === 'hls' || s.file.includes('.m3u8') ? 'hls' : 'mp4',
-      useProxy: true,
+      useProxy: false,
       headers: { Referer: REFERER, Origin: 'https://vidnest.fun', ...data.headers },
     }));
 }
@@ -94,7 +94,7 @@ function parseStreams(data: any, name: string): EmbedSource[] {
       title: `${name} (${s.language || s.quality || 'auto'})`,
       url: s.url,
       type: s.type === 'hls' || s.url.includes('.m3u8') ? 'hls' : 'mp4',
-      useProxy: true,
+      useProxy: false,
       headers: { Referer: REFERER, Origin: 'https://vidnest.fun', ...data.headers },
     }));
 }
@@ -110,7 +110,7 @@ function parseMoviebox(data: any, name: string): EmbedSource[] {
       title: `${name} (${u.resolution || 'auto'}p)`,
       url: u.link,
       type: u.link.includes('.m3u8') ? 'hls' : 'mp4',
-      useProxy: true,
+      useProxy: false,
       headers: { Referer: REFERER, Origin: 'https://vidnest.fun', ...data.headers },
     }));
 }
@@ -125,7 +125,7 @@ function parseHexa(data: any, name: string): EmbedSource[] {
     title: name,
     url: playlist,
     type: 'hls',
-    useProxy: true,
+    useProxy: false,
     headers: { Referer: REFERER, Origin: 'https://vidnest.fun', ...data.headers },
   }];
 }
