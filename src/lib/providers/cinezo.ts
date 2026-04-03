@@ -97,7 +97,7 @@ async function fetchServer(
       type,
       ...(lang ? { lang } : {}),
       ...(subtitles.length > 0 ? { subtitles } : {}),
-      useProxy: false,
+      useProxy: true,
     } as EmbedSource;
   } catch {
     return null;
