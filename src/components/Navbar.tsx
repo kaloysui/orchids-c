@@ -115,7 +115,7 @@ export function Navbar() {
   };
 
   // Hide Navbar on Movie and TV Details pages, Live Sports Player, and embed pages
-  const isDetailsPage = pathname.startsWith('/movie/') || pathname.startsWith('/tv/') || pathname.startsWith('/live-sports/play/') || pathname.startsWith('/music/play/') || pathname.startsWith('/embed/');
+  const isDetailsPage = pathname.startsWith('/movie/') || pathname.startsWith('/tv/') || pathname.startsWith('/live-sports/play/') || pathname.startsWith('/music/play/') || pathname.startsWith('/embed/') || pathname === '/api-docs';
   
   if (isDetailsPage) return null;
 
@@ -148,85 +148,62 @@ export function Navbar() {
                   <ChevronDown className="w-4 h-4 opacity-50 group-hover:rotate-180 transition-transform duration-300" />
                 </button>
               </DropdownMenuTrigger>
-                    <DropdownMenuContent 
-                      align="start" 
+                    <DropdownMenuContent
+                      align="start"
                       sideOffset={12}
-                      className="w-[18rem] md:w-[22rem] bg-card/95 border-border text-foreground backdrop-blur-2xl shadow-2xl p-1.5 rounded-2xl animate-in fade-in zoom-in-95 duration-200"
+                      className="w-52 bg-card/95 border-border text-foreground backdrop-blur-2xl shadow-2xl p-1.5 rounded-2xl animate-in fade-in zoom-in-95 duration-200"
                     >
-                      <div className="px-2 py-1 text-[9px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">
-                        Menu
-                      </div>
-                      <div className="grid grid-cols-3 gap-0.5">
-                        {browseItems.map((item) => {
-                          const Icon = item.icon;
-                          const isActive = pathname === item.href;
+                      {browseItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = pathname === item.href;
 
-                          // ✅ GENRES (modal)
-                          if (item.isGenre) {
-                            return (
-                              <DropdownMenuItem 
-                                key={item.name}
-                                onSelect={() => setIsGenreModalOpen(true)}
-                                className="focus:bg-accent focus:text-accent-foreground cursor-pointer rounded-lg transition-all flex flex-col items-center justify-center text-center py-2 px-1 hover:scale-[0.98] active:scale-95"
-                              >
-                                <div className="p-1 rounded-lg bg-accent/50 group-hover:bg-accent transition-colors mb-1">
-                                  <Icon className="w-3.5 h-3.5 text-primary" />
-                                </div>
-                                <span className="font-medium text-[10px] leading-tight">{item.name}</span>
-                              </DropdownMenuItem>
-                            );
-                          }
-
-                          // ✅ EXTERNAL LINK (API)
-                          if (item.external) {
-                            return (
-                              <DropdownMenuItem
-                                key={item.name}
-                                asChild
-                                className="focus:bg-accent cursor-pointer rounded-lg"
-                              >
-                                <a
-                                  href={item.href}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="flex flex-col items-center justify-center text-center py-2 px-1 hover:scale-[0.98] active:scale-95 transition-all"
-                                >
-                                  <div className="p-1 rounded-lg bg-accent/50 group-hover:bg-accent transition-colors mb-1">
-                                    <Icon className="w-3.5 h-3.5 text-primary" />
-                                  </div>
-                                  <span className="font-medium text-[10px] leading-tight">{item.name}</span>
-                                </a>
-                              </DropdownMenuItem>
-                            );
-                          }
-
-                          // ✅ INTERNAL LINKS (default)
+                        if (item.isGenre) {
                           return (
                             <DropdownMenuItem
                               key={item.name}
-                              asChild
-                              className="focus:bg-accent focus:text-accent-foreground cursor-pointer rounded-lg transition-all"
+                              onSelect={() => setIsGenreModalOpen(true)}
+                              className={cn(
+                                "flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all focus:bg-accent focus:text-accent-foreground",
+                              )}
                             >
-                              <Link
-                                href={item.href}
-                                onClick={() => setIsLoading(true)}
-                                className={cn(
-                                  "flex flex-col items-center justify-center text-center py-2 px-1 hover:scale-[0.98] active:scale-95 transition-all",
-                                  isActive && "bg-primary/10 text-primary border border-primary/20"
-                                )}
-                              >
-                                <div className={cn(
-                                  "p-1 rounded-lg transition-colors mb-1",
-                                  isActive ? "bg-primary/20" : "bg-accent/50"
-                                )}>
-                                  <Icon className="w-3.5 h-3.5" />
-                                </div>
-                                <span className="font-medium text-[10px] leading-tight">{item.name}</span>
-                              </Link>
+                              <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
+                              <span className="text-sm font-medium">{item.name}</span>
                             </DropdownMenuItem>
                           );
-                        })}
-                      </div>
+                        }
+
+                        if (item.external) {
+                          return (
+                            <DropdownMenuItem key={item.name} asChild className="focus:bg-accent cursor-pointer rounded-xl">
+                              <a href={item.href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-3 py-2.5">
+                                <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
+                                <span className="text-sm font-medium">{item.name}</span>
+                              </a>
+                            </DropdownMenuItem>
+                          );
+                        }
+
+                        return (
+                          <DropdownMenuItem
+                            key={item.name}
+                            asChild
+                            className="focus:bg-accent focus:text-accent-foreground cursor-pointer rounded-xl transition-all"
+                          >
+                            <Link
+                              href={item.href}
+                              onClick={() => setIsLoading(true)}
+                              className={cn(
+                                "flex items-center gap-3 px-3 py-2.5",
+                                isActive && "text-primary"
+                              )}
+                            >
+                              <Icon className={cn("w-4 h-4 shrink-0", isActive ? "text-primary" : "text-muted-foreground")} />
+                              <span className="text-sm font-medium">{item.name}</span>
+                              {isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />}
+                            </Link>
+                          </DropdownMenuItem>
+                        );
+                      })}
                     </DropdownMenuContent>
             </DropdownMenu>
           </div>
