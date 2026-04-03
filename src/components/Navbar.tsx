@@ -3,15 +3,15 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { 
-  Home, 
-  Play, 
-  Film, 
-  Tv, 
-  Settings, 
-  Search, 
-  Bookmark, 
-  User, 
+import {
+  Home,
+  Play,
+  Film,
+  Tv,
+  Settings,
+  Search,
+  Bookmark,
+  User,
   LayoutGrid,
   ChevronDown,
   LogOut,
@@ -21,7 +21,8 @@ import {
   Trophy,
   HardDrive,
     Library,
-    Music
+    Music,
+    Code2
   } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -47,6 +48,7 @@ const browseItems = [
   { name: "Collections", href: "/collections", icon: Library },
   { name: "Live Sports", href: "/live-sports", icon: Trophy },
   { name: "Genres", href: "#", icon: LayoutGrid, isGenre: true },
+  { name: "API", href: "/api-docs", icon: Code2 },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
@@ -112,8 +114,8 @@ export function Navbar() {
     setIsAuthModalOpen(true);
   };
 
-  // Hide Navbar on Movie and TV Details pages and Live Sports Player
-  const isDetailsPage = pathname.startsWith('/movie/') || pathname.startsWith('/tv/') || pathname.startsWith('/live-sports/play/') || pathname.startsWith('/music/play/');
+  // Hide Navbar on Movie and TV Details pages, Live Sports Player, and embed pages
+  const isDetailsPage = pathname.startsWith('/movie/') || pathname.startsWith('/tv/') || pathname.startsWith('/live-sports/play/') || pathname.startsWith('/music/play/') || pathname.startsWith('/embed/');
   
   if (isDetailsPage) return null;
 
