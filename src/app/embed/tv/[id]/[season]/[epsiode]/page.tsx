@@ -4,9 +4,9 @@ import EmbedTVClient from "./EmbedTVClient";
 export default async function EmbedTVPage({
   params,
 }: {
-  params: Promise<{ id: string; season: string; episode: string }>;
+  params: Promise<{ id: string; season: string; epsiode: string }>;
 }) {
-  const { id, season, episode } = await params;
+  const { id, season, epsiode: episode } = await params;
 
   return (
     <div className="h-screen w-screen bg-black overflow-hidden">
