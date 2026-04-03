@@ -11,6 +11,7 @@ import { GlobalLoadingIndicator } from "@/components/GlobalLoadingIndicator";
 import NextTopLoader from "nextjs-toploader";
 import AdScript from "@/components/AdScript";
 import { VisualEditsMessenger } from "orchids-visual-edits";
+import { EmbedGuard } from "@/components/EmbedGuard";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -74,19 +75,21 @@ export default function RootLayout({
                 </Script>
                 <AdScript />
                 <ErrorReporter />
-                <Navbar />
+                <EmbedGuard><Navbar /></EmbedGuard>
 
                 <Toaster position="top-center" richColors />
                 <main className="flex-1 flex flex-col">
                   {children}
                 </main>
-                <footer className="py-10 mt-auto">
-                  <div className="container mx-auto px-4 text-center">
-                    <p className="text-sm text-muted-foreground/50 font-light">
-                      All content is provided by external third-party services.
-                    </p>
-                  </div>
-                </footer>
+                <EmbedGuard>
+                  <footer className="py-10 mt-auto">
+                    <div className="container mx-auto px-4 text-center">
+                      <p className="text-sm text-muted-foreground/50 font-light">
+                        All content is provided by external third-party services.
+                      </p>
+                    </div>
+                  </footer>
+                </EmbedGuard>
               </div>
             </MusicGlobal>
           </LoadingProvider>
