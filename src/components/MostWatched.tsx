@@ -119,7 +119,7 @@ export function MostWatched() {
       {/* TOP 10 Header */}
       <div className="flex items-end justify-between mb-6 px-4">
         <div className="flex items-end gap-3">
-            <h2 className="text-5xl sm:text-6xl md:text-7xl font-black leading-none tracking-tight">
+            <h2 className="text-5xl sm:text-6xl md:text-7xl font-black leading-none tracking-tight whitespace-nowrap">
               <span className="text-transparent bg-clip-text" style={{
                 WebkitTextStroke: '1.5px color-mix(in oklch, var(--primary) 50%, transparent)',
               }}>TOP</span>
@@ -127,7 +127,7 @@ export function MostWatched() {
                 WebkitTextStroke: '2px color-mix(in oklch, var(--primary) 60%, transparent)',
               }}>10</span>
             </h2>
-          <div className="flex flex-col mb-1">
+          <div className="flex flex-col mb-1 whitespace-nowrap">
             <p className="text-[10px] sm:text-xs font-bold tracking-[0.3em] text-zinc-400 uppercase">
               Content
             </p>
