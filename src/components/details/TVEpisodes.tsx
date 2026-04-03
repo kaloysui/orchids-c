@@ -22,11 +22,14 @@ export function TVEpisodes({ tvId, seasons, onPlay, mediaItem }: TVEpisodesProps
   const scrollRef = useRef<HTMLDivElement>(null);
   const seasonScrollRef = useRef<HTMLDivElement>(null);
 
+  // ✅ Reusable Chevron Style
+  const chevronBtn =
+    "flex-none p-2 rounded-full bg-zinc-900/70 backdrop-blur-md text-white hover:bg-white hover:text-black transition-all border border-white/10 active:scale-95 shadow-lg hover:shadow-white/20";
+
   const scroll = (direction: "left" | "right") => {
     if (!scrollRef.current) return;
-    const scrollAmount = 400;
     scrollRef.current.scrollBy({
-      left: direction === "left" ? -scrollAmount : scrollAmount,
+      left: direction === "left" ? -400 : 400,
       behavior: "smooth",
     });
   };
@@ -61,15 +64,12 @@ export function TVEpisodes({ tvId, seasons, onPlay, mediaItem }: TVEpisodesProps
           Episodes
         </h2>
 
-        {/* Season Tabs */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => scrollSeason("left")}
-            className="flex-none p-1.5 rounded-full bg-zinc-900/80 text-white hover:bg-white hover:text-black transition-all border border-white/10"
+        {/* ✅ Season Tabs with Overlay Chevron */}
+        <div className="relative">
+          <div
+            ref={seasonScrollRef}
+            className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide"
           >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <div ref={seasonScrollRef} className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide -mx-2 px-2">
             {seasons.map((s: any) => (
               <button
                 key={s.id}
@@ -84,12 +84,16 @@ export function TVEpisodes({ tvId, seasons, onPlay, mediaItem }: TVEpisodesProps
               </button>
             ))}
           </div>
-          <button
-            onClick={() => scrollSeason("right")}
-            className="flex-none p-1.5 rounded-full bg-zinc-900/80 text-white hover:bg-white hover:text-black transition-all border border-white/10"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
+
+          {/* Chevron Overlay */}
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 flex gap-1 pr-2">
+            <button onClick={() => scrollSeason("left")} className={chevronBtn}>
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button onClick={() => scrollSeason("right")} className={chevronBtn}>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -126,7 +130,7 @@ export function TVEpisodes({ tvId, seasons, onPlay, mediaItem }: TVEpisodesProps
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
 
-                {/* Play Icon */}
+                {/* Play */}
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none">
                   <div className="bg-primary/20 backdrop-blur-md p-5 rounded-full border border-white/20 text-white transform scale-90 group-hover:scale-100 transition-transform shadow-2xl">
                     <Play className="h-8 w-8 fill-current" />
@@ -144,23 +148,24 @@ export function TVEpisodes({ tvId, seasons, onPlay, mediaItem }: TVEpisodesProps
                     </span>
                   </div>
 
-                    <div className="flex justify-between items-end gap-4">
-                      <h3 className="text-sm font-black text-white uppercase tracking-wider line-clamp-1">
-                        {ep.name}
-                      </h3>
+                  <div className="flex justify-between items-end gap-4">
+                    <h3 className="text-sm font-black text-white uppercase tracking-wider line-clamp-1">
+                      {ep.name}
+                    </h3>
 
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDownloadEpisode({ season: selectedSeason, episode: ep.episode_number });
-                        }}
-                        className="bg-primary/80 hover:bg-primary p-2 rounded-full border border-white/10 text-white transition-all active:scale-95"
-                        title="Download Episode"
-                      >
-                        <Download className="h-4 w-4" />
-                      </button>
-                    </div>
-
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDownloadEpisode({
+                          season: selectedSeason,
+                          episode: ep.episode_number,
+                        });
+                      }}
+                      className="bg-primary/80 hover:bg-primary p-2 rounded-full border border-white/10 text-white transition-all active:scale-95"
+                    >
+                      <Download className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -172,23 +177,17 @@ export function TVEpisodes({ tvId, seasons, onPlay, mediaItem }: TVEpisodesProps
         )}
       </div>
 
-      {/* Scroll Buttons */}
+      {/* Episode Chevron Controls */}
       <div className="flex items-center justify-end px-4 gap-1">
-        <button
-          onClick={() => scroll("left")}
-          className="p-1.5 rounded-full bg-zinc-900/80 text-white hover:bg-white hover:text-black transition-all border border-white/10"
-        >
+        <button onClick={() => scroll("left")} className={chevronBtn}>
           <ChevronLeft className="w-4 h-4" />
         </button>
-        <button
-          onClick={() => scroll("right")}
-          className="p-1.5 rounded-full bg-zinc-900/80 text-white hover:bg-white hover:text-black transition-all border border-white/10"
-        >
+        <button onClick={() => scroll("right")} className={chevronBtn}>
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
 
-      <DownloadModal 
+      <DownloadModal
         isOpen={!!downloadEpisode}
         onClose={() => setDownloadEpisode(null)}
         mediaItem={mediaItem}
