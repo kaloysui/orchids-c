@@ -4,7 +4,6 @@ import "./globals.css";
 import ErrorReporter from "@/components/ErrorReporter";
 import Script from "next/script";
 import { Navbar } from "@/components/Navbar";
-import { ShareModal } from "@/components/ShareModal";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { LoadingProvider } from "@/hooks/useGlobalLoading";
@@ -77,7 +76,6 @@ export default function RootLayout({
                 <ErrorReporter />
                 <Navbar />
 
-                <ShareModal />
                 <Toaster position="top-center" richColors />
                 <main className="flex-1 flex flex-col">
                   {children}
