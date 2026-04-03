@@ -316,10 +316,15 @@ export function VideoPlayer({
     return "mp4";
   }, []);
 
+  const showControlsRef = useRef(true);
+
   const startControlsTimer = useCallback(() => {
     if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
     controlsTimeoutRef.current = setTimeout(() => {
-      if (isPlaying && !settingsOpen) setShowControls(false);
+      if (isPlaying && !settingsOpen) {
+        showControlsRef.current = false;
+        setShowControls(false);
+      }
     }, 5000);
   }, [isPlaying, settingsOpen]);
 
@@ -651,7 +656,10 @@ export function VideoPlayer({
   }, []);
 
   const handleInteraction = useCallback(() => {
-    setShowControls(true);
+    if (!showControlsRef.current) {
+      showControlsRef.current = true;
+      setShowControls(true);
+    }
     startControlsTimer();
   }, [startControlsTimer]);
 
@@ -1300,6 +1308,7 @@ export function VideoPlayer({
       onMouseLeave={() => {
         if (isPlaying && !settingsOpen) {
           if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+          showControlsRef.current = false;
           setShowControls(false);
         }
       }}
@@ -1586,10 +1595,10 @@ export function VideoPlayer({
       <AnimatePresence>
         {showControls && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.3 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
             className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/50 z-10"
             onClick={togglePlay}
           >
