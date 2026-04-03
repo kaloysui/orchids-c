@@ -156,7 +156,7 @@ export default function NetPlayer({
             subtitle={displaySubtitle}
             poster={backdropUrl}
             autoPlay={autoPlay}
-            themeColor="var(--primary)"
+            themeColor="#ffffff"
             isLoading={loadingSources || loadingMetadata}
             nextEpisode={nextEpisode}
             onAutoNext={handleAutoNext}
