@@ -55,7 +55,6 @@ export async function GET(req: NextRequest) {
       'Accept': '*/*',
       'Accept-Language': 'en-US,en;q=0.9',
       'Connection': 'keep-alive',
-      'Cache-Control': 'no-cache',
     };
 
     const range = req.headers.get('range');
@@ -88,13 +87,12 @@ export async function GET(req: NextRequest) {
 
     while (attempts < maxAttempts) {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
 
       try {
-        res = await fetch(url, { 
+        res = await fetch(url, {
           headers,
           signal: controller.signal,
-          cache: 'no-store'
         });
         clearTimeout(timeoutId);
 
@@ -113,7 +111,7 @@ export async function GET(req: NextRequest) {
         if (attempts === maxAttempts - 1) throw err;
       }
       attempts++;
-      await new Promise(r => setTimeout(r, 1000 * attempts));
+      await new Promise(r => setTimeout(r, 300 * attempts));
     }
     
     if (!res) throw new Error('Failed to fetch after multiple attempts');
@@ -186,7 +184,7 @@ export async function GET(req: NextRequest) {
         headers: { 
           ...CORS_HEADERS, 
           'Content-Type': 'application/vnd.apple.mpegurl', 
-          'Cache-Control': 'public, max-age=10, stale-while-revalidate=60',
+          'Cache-Control': 'public, max-age=60, stale-while-revalidate=300',
           'X-Accel-Buffering': 'no',
           'X-Proxy-Success': 'true'
         }
