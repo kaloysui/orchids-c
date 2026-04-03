@@ -20,12 +20,21 @@ export function TVEpisodes({ tvId, seasons, onPlay, mediaItem }: TVEpisodesProps
   const [downloadEpisode, setDownloadEpisode] = useState<{ season: number, episode: number } | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
+  const seasonScrollRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: "left" | "right") => {
     if (!scrollRef.current) return;
     const scrollAmount = 400;
     scrollRef.current.scrollBy({
       left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
+    });
+  };
+
+  const scrollSeason = (direction: "left" | "right") => {
+    if (!seasonScrollRef.current) return;
+    seasonScrollRef.current.scrollBy({
+      left: direction === "left" ? -200 : 200,
       behavior: "smooth",
     });
   };
@@ -53,20 +62,34 @@ export function TVEpisodes({ tvId, seasons, onPlay, mediaItem }: TVEpisodesProps
         </h2>
 
         {/* Season Tabs */}
-        <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide -mx-2 px-2">
-          {seasons.map((s: any) => (
-            <button
-              key={s.id}
-              onClick={() => setSelectedSeason(s.season_number)}
-              className={`flex-none px-6 py-3 rounded-full text-[11px] font-black uppercase tracking-[0.2em] border ${
-                selectedSeason === s.season_number
-                  ? "bg-white text-black border-white"
-                  : "bg-zinc-900/50 text-zinc-500 border-white/5"
-              }`}
-            >
-              Season {s.season_number}
-            </button>
-          ))}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => scrollSeason("left")}
+            className="flex-none p-1.5 rounded-full bg-zinc-900/80 text-white hover:bg-white hover:text-black transition-all border border-white/10"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <div ref={seasonScrollRef} className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide -mx-2 px-2">
+            {seasons.map((s: any) => (
+              <button
+                key={s.id}
+                onClick={() => setSelectedSeason(s.season_number)}
+                className={`flex-none px-6 py-3 rounded-full text-[11px] font-black uppercase tracking-[0.2em] border ${
+                  selectedSeason === s.season_number
+                    ? "bg-white text-black border-white"
+                    : "bg-zinc-900/50 text-zinc-500 border-white/5"
+                }`}
+              >
+                Season {s.season_number}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => scrollSeason("right")}
+            className="flex-none p-1.5 rounded-full bg-zinc-900/80 text-white hover:bg-white hover:text-black transition-all border border-white/10"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
