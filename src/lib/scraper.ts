@@ -1,6 +1,5 @@
-import { tryZxcPrime } from './providers/zxcprime';
-import { tryPoprink } from './providers/poprink';
 import { tryVidnest } from './providers/vidnest';
+import { tryCinezo } from './providers/cinezo';
 import { EmbedSource, robustFetch } from './providers/utils';
 import { Track } from '@/components/netplayer/types/player';
 
@@ -37,9 +36,8 @@ export async function extractEmbedMaster(url: string) {
   let primaryBaseUrl = '';
 
         const providers = [
-            { name: 'ZXCPRIME', fn: () => tryZxcPrime(path), priority: 0 },
-            { name: 'VIDNEST', fn: () => tryVidnest(path), priority: 2 },
-            { name: 'POPRINK', fn: () => tryPoprink(path), priority: 1 },
+            { name: 'VIDNEST', fn: () => tryVidnest(path), priority: 1 },
+            { name: 'CINEZO',  fn: () => tryCinezo(path),   priority: 0 },
           ];
 
     // Wait for all results and aggregate
