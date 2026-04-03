@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
       wyzieParams.set('episode', episode);
     }
 
-    const response = await fetch(`https://sub.wyzie.ru/search?${wyzieParams.toString()}`, {
+    const response = await fetch(`https://sub.wyzie.ru/search?${wyzieParams.toString()}&key=wyzie-fbffa961f49eb4a2e6f8a1722362906a`, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'application/json',
