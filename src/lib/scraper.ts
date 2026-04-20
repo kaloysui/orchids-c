@@ -1,5 +1,6 @@
 import { tryVidnest } from './providers/vidnest';
 import { tryCinezo } from './providers/cinezo';
+import { tryVyla } from './providers/vyla';
 import { EmbedSource, robustFetch } from './providers/utils';
 import { Track } from '@/components/netplayer/types/player';
 
@@ -36,8 +37,9 @@ export async function extractEmbedMaster(url: string) {
   let primaryBaseUrl = '';
 
         const providers = [
-            { name: 'VIDNEST', fn: () => tryVidnest(path), priority: 1 },
+            { name: 'VIDNEST', fn: () => tryVidnest(path), priority: 2 },
             { name: 'CINEZO',  fn: () => tryCinezo(path),   priority: 0 },
+            { name: 'VYLA',  fn: () => tryVyla(path),   priority: 1 },
           ];
 
     // Wait for all results and aggregate
