@@ -1,7 +1,6 @@
 import { EmbedSource, USER_AGENT, robustFetch } from './utils';
 
 const VYLA_BASE = 'https://vyla-api.pages.dev';
-const VYLA_TIMEOUT = 10000;
 
 interface VylaSource {
   url: string;
@@ -50,7 +49,7 @@ export async function tryVyla(path: string): Promise<{ sources: EmbedSource[]; b
         'User-Agent': USER_AGENT,
         'Accept': 'application/json, */*',
       },
-    }, 1, VYLA_TIMEOUT);
+    });
 
     if (!res.ok) return null;
 
@@ -62,7 +61,7 @@ export async function tryVyla(path: string): Promise<{ sources: EmbedSource[]; b
 
     const subtitles = data.subtitles?.map((s) => ({
       file: s.url,
-      label: s.label || 'Unknown',
+      ...(s.label ? { label: s.label } : {}),
       kind: 'subtitles',
     })) ?? [];
 
