@@ -79,7 +79,7 @@ export async function tryVyla(path: string): Promise<{ sources: EmbedSource[]; b
         quality: s.quality || 'Auto',
         headers: s.headers,
         ...(subtitles.length > 0 ? { subtitles } : {}),
-        useProxy: false,
+        useProxy: true,
       }));
 
     console.log(`[Scraper] vyla found ${sources.length} sources`);
