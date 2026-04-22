@@ -1,7 +1,7 @@
 import { EmbedSource, USER_AGENT, robustFetch } from './utils';
 
 const VYLA_BASE = 'https://vyla-api.pages.dev';
-const VYLA_TIMEOUT = 5000;
+const VYLA_TIMEOUT = 10000;
 
 interface VylaSource {
   url: string;
