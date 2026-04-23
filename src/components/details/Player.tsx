@@ -260,16 +260,13 @@ export function Player({ type, tmdbId, season, episode, onBack }: PlayerProps) {
                 exit={{ opacity: 0 }}
                 className="h-full w-full"
               >
-                  <NetPlayer 
+                  <NetPlayer
                     movieId={type === "movie" ? tmdbId.toString() : undefined}
                     tvId={type === "tv" ? tmdbId.toString() : undefined}
                     season={currentSeason}
                     episode={currentEpisode}
                     autoPlay={autoPlay}
-                    themeColor={`#${color}`}
                     onError={handlePlayerError}
-                    onEnded={() => {}} 
-                    onProgress={handleProgress}
                     onAutoNext={(next) => handleAutoNext(next)}
                   />
               </motion.div>
