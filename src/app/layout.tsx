@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import ErrorReporter from "@/components/ErrorReporter";
 import Script from "next/script";
@@ -18,6 +18,12 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "600", "700", "800", "900"],
+  variable: "--font-poppins",
+});
+
 export const metadata: Metadata = {
   title: "bCine",
   description: "Watch the latest trending movies and TV shows on bCine.",
@@ -32,7 +38,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">
+      <body className={`antialiased ${inter.variable} ${poppins.variable}`}>
 
         <ErrorReporter />
     
