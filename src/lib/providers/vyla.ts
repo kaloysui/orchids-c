@@ -11,16 +11,9 @@ interface VylaSource {
   headers?: Record<string, string>;
 }
 
-interface VylaSubtitle {
-  url: string;
-  label?: string;
-  format?: string;
-}
-
 interface VylaResponse {
   success: boolean;
   sources?: VylaSource[];
-  subtitles?: VylaSubtitle[];
 }
 
 export async function tryVyla(path: string): Promise<{ sources: EmbedSource[]; baseUrl: string } | null> {
@@ -60,12 +53,6 @@ export async function tryVyla(path: string): Promise<{ sources: EmbedSource[]; b
       return null;
     }
 
-    const subtitles = data.subtitles?.map((s) => ({
-      file: s.url,
-      label: s.label || 'Unknown',
-      kind: 'subtitles',
-    })) ?? [];
-
     let id = 1;
 
     const sources: EmbedSource[] = data.sources
@@ -78,7 +65,6 @@ export async function tryVyla(path: string): Promise<{ sources: EmbedSource[]; b
         type: s.type || (s.url.includes('.m3u8') ? 'hls' : 'mp4'),
         quality: s.quality || 'Auto',
         headers: s.headers,
-        ...(subtitles.length > 0 ? { subtitles } : {}),
         useProxy: false,
       }));
 
