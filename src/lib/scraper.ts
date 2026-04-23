@@ -2,6 +2,7 @@ import { tryVidnest } from './providers/vidnest';
 import { tryCinezo } from './providers/cinezo';
 import { tryVyla } from './providers/vyla';
 import { tryToustream } from './providers/toustream';
+import { tryVynx } from './providers/vynx';
 import { EmbedSource, robustFetch } from './providers/utils';
 import { Track } from '@/components/netplayer/types/player';
 
@@ -38,10 +39,11 @@ export async function extractEmbedMaster(url: string) {
   let primaryBaseUrl = '';
 
         const providers = [
-            { name: 'VIDNEST', fn: () => tryVidnest(path), priority: 3 },
-            { name: 'CINEZO',  fn: () => tryCinezo(path),   priority: 2 },
-            { name: 'VYLA',  fn: () => tryVyla(path),   priority: 1 },
-            { name: 'TOUSTREAM',  fn: () => tryToustream(path),   priority: 0 },
+            { name: 'VIDNEST', fn: () => tryVidnest(path), priority: 4 },
+            { name: 'CINEZO',  fn: () => tryCinezo(path),   priority: 3 },
+            { name: 'VYLA',  fn: () => tryVyla(path),   priority: 2 },
+            { name: 'TOUSTREAM',  fn: () => tryToustream(path),   priority: 1 },
+            { name: 'VYNX',  fn: () => tryVynx(path),   priority: 0 },
           ];
 
     // Wait for all results and aggregate
