@@ -18,7 +18,6 @@ export interface NetPlayerProps {
   muted?: boolean;
   onEnded?: () => void;
   onError?: () => void;
-  onAutoNext?: (next: { season?: number; episode?: number }) => void;
   sources?: any[];
   subtitles?: any[];
 }
@@ -33,7 +32,6 @@ export default function NetPlayer({
   autoPlay = true,
   onEnded,
   onError,
-  onAutoNext,
   sources: initialSources = [],
   subtitles: initialSubtitles = [],
 }: NetPlayerProps) {
@@ -139,15 +137,14 @@ export default function NetPlayer({
     }, [initialSubtitles, dynamicSubtitles]);
 
     const handleAutoNext = useCallback(() => {
-      if (!nextEpisode) return;
-      // If parent wants to handle navigation (e.g. details page updates state)
-      if (onAutoNext) {
-        onAutoNext({ season: nextEpisode.season, episode: nextEpisode.episode });
-      } else {
-        // Fallback: navigate directly (e.g. /watch page)
-        router.push(`/tv/${nextEpisode.id}/${nextEpisode.season}/${nextEpisode.episode}`);
+      if (nextEpisode) {
+        if (onEnded) {
+          onEnded();
+        } else {
+          router.push(`/tv/${nextEpisode.id}/${nextEpisode.season}/${nextEpisode.episode}`);
+        }
       }
-    }, [nextEpisode, onAutoNext, router]);
+    }, [nextEpisode, onEnded, router]);
 
     return (
       <div className="h-full w-full bg-black overflow-hidden">
