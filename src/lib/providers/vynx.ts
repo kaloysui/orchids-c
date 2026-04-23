@@ -20,7 +20,7 @@ interface FlixerResponse {
   sources: FlixerSource[];
 }
 
-export async function tryFlixer(
+export async function tryVynx(
   path: string
 ): Promise<{ sources: EmbedSource[]; baseUrl: string } | null> {
   try {
@@ -42,7 +42,7 @@ export async function tryFlixer(
       ? `${BASE}/flixer/extract-all?tmdbId=${tmdbId}&type=tv&season=${season}&episode=${episode}`
       : `${BASE}/flixer/extract-all?tmdbId=${tmdbId}`;
 
-    console.log('[Scraper] Trying Flixer for:', path);
+    console.log('[Scraper] Trying Vynx for:', path);
 
     const res = await robustFetch(
       apiUrl,
@@ -73,24 +73,24 @@ export async function tryFlixer(
           id: sourceId++,
           name: s.title,
           title: s.title,
-          url: proxiedUrl, 
+          url: proxiedUrl,
           type: s.type === 'hls' ? 'hls' : 'mp4',
           quality: s.quality || 'Auto',
           headers: {
             Referer: s.referer || '',
           },
-          useProxy: false, 
+          useProxy: false, // 👈 imong gusto
         };
       });
 
-    console.log(`[Scraper] Flixer found ${sources.length} sources`);
+    console.log(`[Scraper] Vynx found ${sources.length} sources`);
 
     return sources.length > 0
       ? { sources, baseUrl: BASE }
       : null;
 
   } catch (e) {
-    console.error('[Scraper] Flixer error:', e);
+    console.error('[Scraper] Vynx error:', e);
     return null;
   }
 }
