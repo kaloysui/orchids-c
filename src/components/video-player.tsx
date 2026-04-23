@@ -158,45 +158,30 @@ export function VideoPlayer({
 
     // Auto Next State
     const [showAutoNextOverlay, setShowAutoNextOverlay] = useState(false);
-    const showAutoNextOverlayRef = useRef(false);
     const [autoNextCountdown, setAutoNextCountdown] = useState(10);
     const autoNextTimerRef = useRef<NodeJS.Timeout | null>(null);
     const autoNextTriggeredRef = useRef(false);
-    const onAutoNextRef = useRef(onAutoNext);
-    useEffect(() => { onAutoNextRef.current = onAutoNext; }, [onAutoNext]);
-
-    // Keep ref in sync with state for use in stale closures
-    const setShowAutoNextOverlaySync = useCallback((val: boolean) => {
-      showAutoNextOverlayRef.current = val;
-      setShowAutoNextOverlay(val);
-    }, []);
 
     useEffect(() => {
-      if (!showAutoNextOverlay) return;
-
-      if (autoNextCountdown > 0) {
+      if (showAutoNextOverlay && autoNextCountdown > 0) {
         autoNextTimerRef.current = setTimeout(() => {
           setAutoNextCountdown(prev => prev - 1);
         }, 1000);
-      } else {
-        // countdown reached 0 — navigate to next episode
-        setShowAutoNextOverlaySync(false);
-        onAutoNextRef.current?.();
+      } else if (showAutoNextOverlay && autoNextCountdown === 0) {
+        onAutoNext?.();
+        setShowAutoNextOverlay(false);
       }
       return () => {
-        if (autoNextTimerRef.current) {
-          clearTimeout(autoNextTimerRef.current);
-          autoNextTimerRef.current = null;
-        }
+        if (autoNextTimerRef.current) clearTimeout(autoNextTimerRef.current);
       };
-    }, [showAutoNextOverlay, autoNextCountdown]);
+    }, [showAutoNextOverlay, autoNextCountdown, onAutoNext]);
 
     useEffect(() => {
       // Reset trigger when source changes
       autoNextTriggeredRef.current = false;
-      setShowAutoNextOverlaySync(false);
+      setShowAutoNextOverlay(false);
       setAutoNextCountdown(10);
-    }, [currentServerIndex, setShowAutoNextOverlaySync]);
+    }, [currentServerIndex]);
 
     useEffect(() => {
       if (!activeSubtitle && subtitles.length > 0) {
@@ -555,14 +540,14 @@ export function VideoPlayer({
 
       if (nextEpisode && dur > 0 && !autoNextTriggeredRef.current && !videoRef.current.ended) {
         const remaining = dur - time;
-        if (remaining <= 15 && remaining > 0 && !showAutoNextOverlayRef.current) {
-          setShowAutoNextOverlaySync(true);
+        if (remaining <= 15 && remaining > 0 && !showAutoNextOverlay) {
+          setShowAutoNextOverlay(true);
           setAutoNextCountdown(10);
           autoNextTriggeredRef.current = true;
         }
       }
     }
-  }, [nextEpisode, setShowAutoNextOverlaySync]);
+  }, [nextEpisode, showAutoNextOverlay]);
 
   const handleSeek = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!progressRef.current || !videoRef.current || duration <= 0) return;
@@ -1400,17 +1385,11 @@ export function VideoPlayer({
               }
             }}
             onEnded={() => {
-              if (nextEpisode) {
-                if (!autoNextTriggeredRef.current) {
-                  // Overlay hasn't shown yet — show it now
-                  setShowAutoNextOverlaySync(true);
-                  setAutoNextCountdown(10);
-                  autoNextTriggeredRef.current = true;
-                } else if (!showAutoNextOverlayRef.current) {
-                  // Overlay was shown but dismissed (Cancel) — auto-navigate anyway since episode ended
-                  onAutoNextRef.current?.();
-                }
-              } else if (onEnded) {
+              if (nextEpisode && !autoNextTriggeredRef.current) {
+                setShowAutoNextOverlay(true);
+                setAutoNextCountdown(10);
+                autoNextTriggeredRef.current = true;
+              } else if (!nextEpisode && onEnded) {
                 onEnded();
               }
             }}
@@ -1592,7 +1571,7 @@ export function VideoPlayer({
 
                       <div className="flex items-center gap-3">
                           <button
-                            onClick={(e) => { e.stopPropagation(); setShowAutoNextOverlaySync(false); onAutoNextRef.current?.(); }}
+                            onClick={(e) => { e.stopPropagation(); onAutoNext?.(); }}
                             className="flex-1 text-black h-12 rounded-2xl text-[12px] font-black uppercase tracking-[0.15em] transition-all hover:brightness-110 active:scale-[0.97]"
                             style={{ backgroundColor: themeColor, boxShadow: `0 8px 20px -4px color-mix(in srgb, ${themeColor}, transparent 60%)` }}
                           >
@@ -1600,7 +1579,7 @@ export function VideoPlayer({
                         </button>
 
                       <button
-                        onClick={(e) => { e.stopPropagation(); setShowAutoNextOverlaySync(false); }}
+                        onClick={(e) => { e.stopPropagation(); setShowAutoNextOverlay(false); }}
                         className="px-6 h-12 bg-white/5 hover:bg-white/10 text-white/40 hover:text-white rounded-2xl text-[12px] font-black uppercase tracking-[0.15em] transition-all border border-white/10 backdrop-blur-xl"
                       >
                         Cancel
