@@ -119,13 +119,8 @@ export function MostWatched() {
       {/* TOP 10 Header */}
       <div className="flex items-end justify-between mb-6 px-4">
         <div className="flex items-end gap-3">
-            <h2 className="text-5xl sm:text-6xl md:text-7xl font-black leading-none tracking-tight whitespace-nowrap">
-              <span className="text-transparent bg-clip-text" style={{
-                WebkitTextStroke: '1.5px color-mix(in oklch, var(--primary) 50%, transparent)',
-              }}>TOP</span>
-              <span className="text-transparent bg-clip-text" style={{
-                WebkitTextStroke: '2px color-mix(in oklch, var(--primary) 60%, transparent)',
-              }}>10</span>
+            <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-none tracking-tight whitespace-nowrap uppercase tmdb-top10-title">
+              TOP10
             </h2>
           <div className="flex flex-col mb-1 whitespace-nowrap">
             <p className="text-[10px] sm:text-xs font-bold tracking-[0.3em] text-zinc-400 uppercase">
@@ -155,14 +150,9 @@ export function MostWatched() {
             >
               <div className="flex items-end">
                   {/* Large ranking number */}
-                  <div className="relative z-0 flex-shrink-0 -mr-2 sm:-mr-3">
-                      <span 
-                          className="text-[100px] sm:text-[120px] md:text-[140px] font-black leading-none select-none"
-                        style={{
-                          color: 'transparent',
-                          WebkitTextStroke: '2px color-mix(in oklch, var(--primary) 30%, transparent)',
-                          filter: 'drop-shadow(0 0 20px color-mix(in oklch, var(--primary) 10%, transparent))',
-                        }}
+                  <div className="relative z-0 flex-shrink-0 -mr-2 sm:-mr-3 tmdb-num-wrap">
+                      <span
+                          className="tmdb-rank-number text-[100px] sm:text-[120px] md:text-[140px] font-black leading-none select-none"
                       >
                       {index + 1}
                     </span>
