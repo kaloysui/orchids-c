@@ -148,20 +148,18 @@ export default function NetPlayer({
 
     return (
       <div className="h-full w-full bg-black overflow-hidden">
-            <VideoPlayer
-              key={`${movieId}-${tvId}-${season}-${episode}`}
-              servers={mergedServers}
-            subtitles={mergedSubtitles}
-            title={displayTitle}
-            subtitle={displaySubtitle}
-            poster={backdropUrl}
-            autoPlay={autoPlay}
-            themeColor="#ffffff"
-            isLoading={loadingSources || loadingMetadata}
-            nextEpisode={nextEpisode}
-            onAutoNext={handleAutoNext}
-            onEnded={onEnded}
-          />
+<VideoPlayer
+  key={`${movieId}-${tvId}-${season}-${episode}`}
+  servers={mergedServers}
+  subtitles={mergedSubtitles}
+  title={displayTitle}
+  subtitle={displaySubtitle}
+  poster={backdropUrl}
+  autoPlay={autoPlay}
+  themeColor="#ffffff"
+  isLoading={loadingSources || loadingMetadata}
+  onEnded={onEnded}
+/>
     </div>
   );
 }
