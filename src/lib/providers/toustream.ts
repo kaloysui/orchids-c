@@ -40,7 +40,7 @@ async function fetchServer(
 
     if (!data.streamUrl) return null;
 
-    // ⚠️ relative URL → full URL
+    // convert relative → absolute
     const fullUrl = data.streamUrl.startsWith('http')
       ? data.streamUrl
       : `${BASE}${data.streamUrl}`;
@@ -48,10 +48,10 @@ async function fetchServer(
     return {
       id: 0,
       name: serverName,
-      quality: data.quality || 'Auto',
       title: serverName,
       url: fullUrl,
       type: data.isHls ? 'hls' : 'mp4',
+      quality: data.quality || 'Auto',
       useProxy: false,
     } as EmbedSource;
 
@@ -60,7 +60,9 @@ async function fetchServer(
   }
 }
 
-export async function tryTou(path: string): Promise<{ sources: EmbedSource[]; baseUrl: string } | null> {
+export async function tryToustream(
+  path: string
+): Promise<{ sources: EmbedSource[]; baseUrl: string } | null> {
   try {
     const isTV = path.startsWith('tv/');
     let tmdbId: string;
