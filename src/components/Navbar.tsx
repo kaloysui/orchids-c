@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { FaDiscord } from "react-icons/fa";
 import {
   Home,
   Play,
@@ -49,6 +50,12 @@ const browseItems = [
   { name: "Live Sports", href: "/live-sports", icon: Trophy },
   { name: "Genres", href: "#", icon: LayoutGrid, isGenre: true },
   { name: "API", href: "/api-docs", icon: Code2 },
+  {
+    name: "Discord",
+    href: "https://discord.gg/MTZxF6uVd", 
+    icon: FaDiscord,
+    external: true,
+  },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
