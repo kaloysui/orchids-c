@@ -78,14 +78,6 @@ export default function AdScript() {
           `,  
         }}  
       />  
-
-      {/* INTERSTITIAL Script (lazy load) */}  
-      <Script  
-        key={`ads-interstitial-${pathname}`}  
-        src="//dcbbwymp1bhlf.cloudfront.net/?wbbcd=1254997"  
-        strategy="lazyOnload"  
-        data-cfasync="false"  
-      />  
     </>  
   );  
-}
+}  
