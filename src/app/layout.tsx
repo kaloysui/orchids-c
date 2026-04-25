@@ -33,15 +33,26 @@ import { MusicGlobal } from "@/components/music/MusicGlobal";
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
+      <head>
+        {/* ✅ VIGNETTE Script (IMPORTANT: must be in head) */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(s){
+  s.dataset.zone='10922393';
+  s.src='https://dd133.com/vignette.min.js';
+})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')));`,
+          }}
+        />
+      </head>
+
       <body className={`antialiased ${inter.variable} ${poppins.variable}`}>
 
         <ErrorReporter />
-    
 
         <ThemeProvider
           attribute="class"
@@ -65,6 +76,7 @@ export default function RootLayout({
                   speed={200}
                   shadow="0 0 10px hsl(var(--primary)),0 0 5px hsl(var(--primary))"
                 />
+
                 {/* Google Analytics */}
                 <Script
                   src="https://www.googletagmanager.com/gtag/js?id=G-FR2L0BGSNX"
@@ -79,7 +91,10 @@ export default function RootLayout({
                     gtag('config', 'G-FR2L0BGSNX');
                   `}
                 </Script>
+
+                {/* POP ads remain here */}
                 <AdScript />
+
                 <ErrorReporter />
                 <EmbedGuard><Navbar /></EmbedGuard>
 
@@ -87,6 +102,7 @@ export default function RootLayout({
                 <main className="flex-1 flex flex-col">
                   {children}
                 </main>
+
                 <EmbedGuard>
                   <footer className="py-10 mt-auto">
                     <div className="container mx-auto px-4 text-center">
@@ -100,6 +116,7 @@ export default function RootLayout({
             </MusicGlobal>
           </LoadingProvider>
         </ThemeProvider>
+
         <VisualEditsMessenger />
       </body>
     </html>
