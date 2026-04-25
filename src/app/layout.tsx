@@ -41,9 +41,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`antialiased ${inter.variable} ${poppins.variable}`}>
         
-        {/* ADMAVEN INTERSTITIAL */}
+        {/* LIGHTBOX INTERSTITIAL */}
         <Script
-          src="//dcbbwymp1bhlf.cloudfront.net/?wbbcd=1254999"
+          src="//dcbbwymp1bhlf.cloudfront.net/?wbbcd=1255005"
           strategy="afterInteractive"
           data-cfasync="false"
         />
