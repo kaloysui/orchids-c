@@ -78,6 +78,26 @@ export default function AdScript() {
           `,
         }}
       />
+
+      {/* VIGNETTE Script */}
+      <Script
+        key={`ads-vignette-${pathname}`}
+        id="ads-vignette"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+(function(s){
+  s.dataset.zone='10922393';
+  s.src='https://dd133.com/vignette.min.js';
+})(
+  [document.documentElement, document.body]
+    .filter(Boolean)
+    .pop()
+    .appendChild(document.createElement('script'))
+);
+          `,
+        }}
+      />
     </>
   );
 }
