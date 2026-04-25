@@ -37,9 +37,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`antialiased ${inter.variable} ${poppins.variable}`}>
+    return (
+  <html lang="en">
 
+    {/* ADMAVEN INTERSTITIAL */}
+    <Script
+      src="//dcbbwymp1bhlf.cloudfront.net/?wbbcd=1254999"
+      strategy="afterInteractive"
+      data-cfasync="false"
+    />
+
+    <body className={`antialiased ${inter.variable} ${poppins.variable}`}>
         <ErrorReporter />
     
 
