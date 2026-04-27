@@ -14,72 +14,49 @@ interface Media {
   backdrop_path: string;
   title?: string;
   name?: string;
-  logoPath?: string | null;
   vote_average?: number;
   release_date?: string;
   first_air_date?: string;
 }
 
 export function MostWatched() {
-  const [data, setData] = useState<{ movie: Media[], tv: Media[] }>({ movie: [], tv: [] });
+  const [data, setData] = useState<{ movie: Media[]; tv: Media[] }>({ movie: [], tv: [] });
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"movie" | "tv">("movie");
   const scrollRef = useRef<HTMLDivElement>(null);
   const { setIsLoading } = useGlobalLoading();
 
   useEffect(() => {
-    async function fetchAllPopular() {
+    async function fetchAll() {
       setLoading(true);
       try {
         const [movieResults, tvResults] = await Promise.all([
           getPopularByType("movie"),
-          getPopularByType("tv")
+          getPopularByType("tv"),
         ]);
-
-          const processItems = (items: any[], type: "movie" | "tv") => {
-            return items.slice(0, 10).map((item: any) => ({
-              ...item,
-              media_type: type,
-              logoPath: null
-            }));
-          };
-
-          setData({
-            movie: processItems(movieResults, "movie"),
-            tv: processItems(tvResults, "tv")
-          });
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching popular data:", error);
-        setLoading(false);
-      }
+        setData({
+          movie: movieResults.slice(0, 10).map((i: any) => ({ ...i, media_type: "movie" })),
+          tv: tvResults.slice(0, 10).map((i: any) => ({ ...i, media_type: "tv" })),
+        });
+      } catch {}
+      setLoading(false);
     }
-    fetchAllPopular();
+    fetchAll();
   }, []);
 
   const popular = data[activeTab];
 
-  const scroll = (direction: "left" | "right") => {
-    if (scrollRef.current) {
-      const { scrollLeft, clientWidth } = scrollRef.current;
-      const scrollTo = direction === "left" 
-        ? scrollLeft - clientWidth * 0.8 
-        : scrollLeft + clientWidth * 0.8;
-      
-      scrollRef.current.scrollTo({
-        left: scrollTo,
-        behavior: "smooth"
-      });
-    }
+  const scroll = (dir: "left" | "right") => {
+    if (!scrollRef.current) return;
+    const { scrollLeft, clientWidth } = scrollRef.current;
+    scrollRef.current.scrollTo({ left: scrollLeft + (dir === "left" ? -clientWidth * 0.8 : clientWidth * 0.8), behavior: "smooth" });
   };
 
-  const TabButton = ({ type, label }: { type: "movie" | "tv", label: string }) => (
+  const TabButton = ({ type, label }: { type: "movie" | "tv"; label: string }) => (
     <button
       onClick={() => setActiveTab(type)}
       className={`relative py-1.5 text-[10px] font-bold tracking-[0.2em] transition-all ${
-        activeTab === type 
-          ? "text-white" 
-          : "text-zinc-500 hover:text-white"
+        activeTab === type ? "text-white" : "text-zinc-500 hover:text-white"
       }`}
     >
       {label}
@@ -92,134 +69,129 @@ export function MostWatched() {
     </button>
   );
 
-  if (loading && popular.length === 0) {
+  if (loading) {
     return (
-      <div className="w-full py-10 px-0">
-        <div className="flex items-start gap-3 mb-8 px-4">
-          <div className="flex flex-col">
-            <h2 className="text-5xl sm:text-6xl md:text-7xl font-black text-white/10 leading-none tracking-tight">
-              TOP10
-            </h2>
-            <p className="text-[10px] font-bold tracking-[0.3em] text-zinc-500 uppercase mt-1 ml-0.5">
-              Content Today
-            </p>
-          </div>
+      <section className="w-full py-10 px-0">
+        <div className="flex items-end gap-3 mb-6 px-4">
+          <h2 className="text-5xl sm:text-6xl font-black text-white/10 leading-none tracking-tight uppercase">TOP10</h2>
+          <p className="text-[10px] font-bold tracking-[0.3em] text-zinc-500 uppercase mb-1">Content Today</p>
         </div>
-          <div className="flex overflow-x-auto gap-6 px-4 scrollbar-hide">
-            {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="flex-none w-[150px] sm:w-[170px] md:w-[200px] aspect-[2/3] animate-pulse bg-zinc-800" />
-              ))}
-          </div>
-      </div>
+        <div className="flex gap-1 px-4 overflow-x-auto scrollbar-hide">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="flex-none flex items-end">
+              <div className="w-16 text-[80px] font-black text-zinc-800 leading-none select-none -mr-2">{i}</div>
+              <div>
+                <div className="w-[130px] sm:w-[150px] aspect-[2/3] rounded-2xl bg-zinc-800 animate-pulse" />
+                <div className="mt-2 space-y-1.5 w-[130px] sm:w-[150px]">
+                  <div className="h-3.5 bg-zinc-800 rounded animate-pulse w-4/5" />
+                  <div className="h-3 bg-zinc-800 rounded animate-pulse w-3/5" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
     );
   }
 
   return (
     <section className="w-full py-10 px-0 overflow-visible relative">
       {/* TOP 10 Header */}
-      <div className="flex items-end justify-between mb-6 px-4">
-        <div className="flex items-end gap-3">
-            <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-none tracking-tight whitespace-nowrap uppercase tmdb-top10-title">
-              TOP10
-            </h2>
-          <div className="flex flex-col mb-1 whitespace-nowrap">
-            <p className="text-[10px] sm:text-xs font-bold tracking-[0.3em] text-zinc-400 uppercase">
-              Content
-            </p>
-            <p className="text-[10px] sm:text-xs font-bold tracking-[0.3em] text-zinc-400 uppercase">
-              Today
-            </p>
-          </div>
+      <div className="flex items-end gap-3 mb-6 px-4">
+        <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-none tracking-tight uppercase tmdb-top10-title">
+          TOP10
+        </h2>
+        <div className="flex flex-col mb-1">
+          <p className="text-[10px] sm:text-xs font-bold tracking-[0.3em] text-zinc-400 uppercase">Content</p>
+          <p className="text-[10px] sm:text-xs font-bold tracking-[0.3em] text-zinc-400 uppercase">Today</p>
         </div>
       </div>
 
-      {/* Scrollable cards with rank numbers */}
-      <div className="relative">
-        <div 
-          ref={scrollRef}
-          className="flex overflow-x-auto overflow-y-hidden gap-1 sm:gap-2 scrollbar-hide pl-4 pr-8 scroll-smooth mb-6 overscroll-x-contain overscroll-y-none"
-            style={{ touchAction: 'pan-x pinch-zoom' }}
-        >
-          {popular.map((item, index) => (
+      {/* Scrollable cards */}
+      <div
+        ref={scrollRef}
+        className="flex overflow-x-auto overflow-y-hidden gap-1 sm:gap-2 scrollbar-hide pl-4 pr-8 scroll-smooth mb-5 overscroll-x-contain"
+        style={{ touchAction: "pan-x pinch-zoom" }}
+      >
+        {popular.map((item, index) => {
+          const title = item.title || item.name || "";
+          const year = (item.release_date || item.first_air_date || "").slice(0, 4);
+          const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
+          const typeLabel = activeTab === "movie" ? "Movie" : "TV Show";
+
+          return (
             <motion.div
               key={`${item.id}-${activeTab}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="relative flex-none group will-change-transform"
+              className="relative flex-none group"
             >
               <div className="flex items-end">
-                  {/* Large ranking number */}
-                  <div className="relative z-0 flex-shrink-0 -mr-2 sm:-mr-3 tmdb-num-wrap">
-                      <span
-                          className="tmdb-rank-number text-[100px] sm:text-[120px] md:text-[140px] font-black leading-none select-none"
-                      >
-                      {index + 1}
-                    </span>
-                  </div>
+                {/* Rank number */}
+                <div className="relative z-0 flex-shrink-0 -mr-2 sm:-mr-3 tmdb-num-wrap">
+                  <span className="tmdb-rank-number text-[100px] sm:text-[120px] md:text-[140px] font-black leading-none select-none">
+                    {index + 1}
+                  </span>
+                </div>
 
-                  {/* Poster card */}
-                  <Link 
+                {/* Poster + info */}
+                <div className="relative z-10 flex-shrink-0">
+                  <Link
                     href={`/${activeTab}/${item.id}`}
                     onClick={() => setIsLoading(true)}
-                      className="relative z-10 block w-[150px] sm:w-[170px] md:w-[200px] aspect-[2/3] overflow-hidden shadow-2xl cursor-pointer bg-zinc-900 flex-shrink-0"
+                    className="block"
                   >
-                  <img
-                    src={getImageUrl(item.poster_path)}
-                    alt={item.title || item.name}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 will-change-transform"
-                  />
-
-                  {/* Hover overlay */}
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300 z-10">
-                    <div className="absolute bottom-2 left-2 px-2 py-0.5 bg-black/60 backdrop-blur-md border border-white/10 w-fit rounded-full flex items-center gap-1">
-                      <Star className="w-2.5 h-2.5 text-yellow-500 fill-yellow-500" />
-                      <p className="text-[10px] text-yellow-500 font-bold">
-                        {Math.floor(item.vote_average || 0)}
-                      </p>
+                    <div className="w-[130px] sm:w-[150px] md:w-[170px] aspect-[2/3] rounded-2xl overflow-hidden bg-zinc-900 shadow-2xl">
+                      <img
+                        src={getImageUrl(item.poster_path)}
+                        alt={title}
+                        loading="lazy"
+                        decoding="async"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
                     </div>
-                    {(item.release_date || item.first_air_date) && (
-                      <div className="absolute bottom-2 right-2 px-2 py-0.5 bg-black/60 backdrop-blur-md border border-white/10 w-fit rounded-full">
-                        <p className="text-[10px] text-white font-bold">
-                          {(item.release_date || item.first_air_date || "").split("-")[0]}
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                  </Link>
 
-                  {/* Bottom gradient */}
-                  <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
-                </Link>
+                  {/* Info below poster */}
+                  <div className="mt-2.5 px-0.5 w-[130px] sm:w-[150px] md:w-[170px]">
+                    <p className="text-[13px] font-semibold text-white line-clamp-1 leading-tight">
+                      {title}
+                    </p>
+                    <div className="flex items-center gap-1 mt-1 text-[11px] text-white/45">
+                      {rating && (
+                        <>
+                          <Star className="w-2.5 h-2.5 fill-red-500 text-red-500 flex-shrink-0" />
+                          <span>{rating}</span>
+                          <span className="text-white/20">·</span>
+                        </>
+                      )}
+                      {year && <><span>{year}</span><span className="text-white/20">·</span></>}
+                      <span>{typeLabel}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </motion.div>
-          ))}
-        </div>
+          );
+        })}
+      </div>
 
+      {/* Tabs + arrows */}
+      <div className="flex items-center justify-between px-4 mt-2">
+        <div className="flex items-center gap-6">
+          <TabButton type="movie" label="MOVIE" />
+          <TabButton type="tv" label="TV" />
         </div>
-
-        {/* Bottom tabs + arrows */}
-        <div className="flex items-center justify-between px-4 mt-2">
-          <div className="flex items-center gap-6">
-            <TabButton type="movie" label="MOVIE" />
-            <TabButton type="tv" label="TV" />
-          </div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => scroll("left")}
-              className="p-1.5 rounded-full bg-zinc-900/80 text-white hover:bg-white hover:text-black transition-all border border-white/10"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => scroll("right")}
-              className="p-1.5 rounded-full bg-zinc-900/80 text-white hover:bg-white hover:text-black transition-all border border-white/10"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
+        <div className="flex items-center gap-1">
+          <button onClick={() => scroll("left")} className="p-1.5 rounded-full bg-zinc-900/80 text-white hover:bg-white hover:text-black transition-all border border-white/10">
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <button onClick={() => scroll("right")} className="p-1.5 rounded-full bg-zinc-900/80 text-white hover:bg-white hover:text-black transition-all border border-white/10">
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
+      </div>
     </section>
   );
 }
