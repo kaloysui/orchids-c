@@ -88,7 +88,7 @@ export default function RootLayout({
                 <EmbedGuard><Navbar /></EmbedGuard>
 
                 <Toaster position="top-center" richColors />
-                <main className="flex-1 flex flex-col">
+                <main className="flex-1 flex flex-col pb-28">
                   {children}
                 </main>
                 <EmbedGuard>
