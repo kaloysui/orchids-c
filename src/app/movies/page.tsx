@@ -84,7 +84,7 @@ export default function MoviesPage() {
                 <div className="mt-2.5 px-0.5">
                   <p className="text-[13px] font-semibold text-white line-clamp-1 leading-tight">{title}</p>
                   <div className="flex items-center gap-1 mt-1 text-[11px] text-white/45">
-                    {rating && <><Star className="w-2.5 h-2.5 fill-red-500 text-red-500 flex-shrink-0" /><span>{rating}</span><span className="text-white/20">·</span></>}
+                    {rating && <><Star className="w-2.5 h-2.5 fill-yellow-600 text-yellow-600 flex-shrink-0" /><span>{rating}</span><span className="text-white/20">·</span></>}
                     {year && <><span>{year}</span><span className="text-white/20">·</span></>}
                     <span>Movie</span>
                   </div>
