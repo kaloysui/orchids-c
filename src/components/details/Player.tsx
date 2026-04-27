@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
-import { ArrowLeft, MonitorPlay, Cast } from "lucide-react";
+import { ArrowLeft, Layers, ChevronDown, Check } from "lucide-react";
 import React from "react";
 import { useContinueWatching } from "@/hooks/useContinueWatching";
 import { getMediaDetails, getMediaImages } from "@/lib/tmdb";
@@ -235,6 +235,35 @@ export function Player({ type, tmdbId, season, episode, onBack }: PlayerProps) {
       }
     };
 
+    // Sources dropdown
+    const [sourcesOpen, setSourcesOpen] = React.useState(false);
+    const sourcesRef = React.useRef<HTMLDivElement>(null);
+
+    const sources = [
+      { id: "beech", name: "BCINE", description: "Auto play · Auto next", mode: "native" as const },
+      { id: "cedar", name: "CEDAR", description: "Recommended", mode: "legacy" as const },
+      { id: "buke",  name: "BUKE",  description: "Auto play", mode: "legacy" as const },
+    ];
+
+    const handleSourceSwitch = (id: string, mode: "native" | "legacy") => {
+      setProvider(id);
+      setPlayerMode(mode);
+      localStorage.setItem("player_provider", id);
+      setSourcesOpen(false);
+    };
+
+    // Close on outside click
+    React.useEffect(() => {
+      if (!sourcesOpen) return;
+      const handler = (e: MouseEvent) => {
+        if (sourcesRef.current && !sourcesRef.current.contains(e.target as Node)) {
+          setSourcesOpen(false);
+        }
+      };
+      document.addEventListener("mousedown", handler);
+      return () => document.removeEventListener("mousedown", handler);
+    }, [sourcesOpen]);
+
     return (
       <motion.div 
         initial={{ opacity: 0 }}
@@ -243,13 +272,67 @@ export function Player({ type, tmdbId, season, episode, onBack }: PlayerProps) {
         className="fixed inset-0 z-[100] bg-black overflow-hidden"
       >
         <div className="relative h-full w-full">
-          {/* Universal Back Button */}
-          <button
-            onClick={onBack}
-            className="absolute top-6 left-6 z-[120] flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white/70 backdrop-blur-md transition-all hover:bg-black/60 hover:text-white hover:scale-110 active:scale-95 md:top-8 md:left-8"
-          >
-            <ArrowLeft className="h-6 w-6" />
-          </button>
+          {/* Top-left controls: Back + Sources */}
+          <div className="absolute top-6 left-6 z-[120] flex items-center gap-2 md:top-8 md:left-8">
+            {/* Back Button */}
+            <button
+              onClick={onBack}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white/70 backdrop-blur-md transition-all hover:bg-black/60 hover:text-white hover:scale-110 active:scale-95"
+            >
+              <ArrowLeft className="h-6 w-6" />
+            </button>
+
+            {/* Sources Dropdown */}
+            <div ref={sourcesRef} className="relative">
+              <button
+                onClick={() => setSourcesOpen((v) => !v)}
+                className="flex h-10 items-center gap-1.5 rounded-full bg-black/40 px-3.5 text-white/70 backdrop-blur-md transition-all hover:bg-black/60 hover:text-white active:scale-95 text-xs font-semibold tracking-wide"
+              >
+                <Layers className="h-4 w-4" />
+                <span>{sources.find((s) => s.id === provider)?.name ?? "Source"}</span>
+                <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${sourcesOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              <AnimatePresence>
+                {sourcesOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    style={{ transformOrigin: "top left" }}
+                    className="absolute left-0 top-12 w-56 rounded-2xl bg-black/85 backdrop-blur-2xl border border-white/10 shadow-2xl overflow-hidden"
+                  >
+                    <div className="px-4 py-2.5 border-b border-white/10">
+                      <p className="text-[10px] text-white/35 uppercase tracking-widest font-bold">Sources</p>
+                    </div>
+                    <div className="p-1.5 space-y-0.5">
+                      {sources.map((s) => {
+                        const active = provider === s.id;
+                        return (
+                          <button
+                            key={s.id}
+                            onClick={() => handleSourceSwitch(s.id, s.mode)}
+                            className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all text-left ${
+                              active
+                                ? "bg-white/10 text-white"
+                                : "text-white/55 hover:bg-white/5 hover:text-white/90"
+                            }`}
+                          >
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-bold tracking-wide">{s.name}</p>
+                              <p className="text-[10px] text-white/35 mt-0.5">{s.description}</p>
+                            </div>
+                            {active && <Check className="h-3.5 w-3.5 text-white/70 shrink-0" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
   
           <AnimatePresence mode="wait">
             {playerMode === "native" ? (
