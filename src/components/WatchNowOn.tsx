@@ -13,8 +13,6 @@ interface Media {
   backdrop_path: string;
   title?: string;
   name?: string;
-  logoPath?: string | null;
-  logoError?: boolean;
   vote_average?: number;
   release_date?: string;
   first_air_date?: string;
@@ -35,40 +33,35 @@ export function WatchNowOn() {
   const [data, setData] = useState<Record<string, Media[]>>({});
   const [loading, setLoading] = useState(true);
   const [activeNetwork, setActiveNetwork] = useState(NETWORKS[0].id);
-  const [erroredLogos, setErroredLogos] = useState<Set<string>>(new Set());
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const handleLogoError = (id: string) => {
-    setErroredLogos(prev => new Set(prev).add(id));
-  };
-
-    useEffect(() => {
-      async function fetchNetwork() {
-        const network = NETWORKS.find(n => n.id === activeNetwork);
-        if (!network || data[activeNetwork]?.length > 0) return;
+  useEffect(() => {
+    async function fetchNetwork() {
+      const network = NETWORKS.find(n => n.id === activeNetwork);
+      if (!network || data[activeNetwork]?.length > 0) return;
+      
+      setLoading(true);
+      try {
+        const response = await getProviderContent(
+          network.providerId,
+          network.providerId // You may need to adjust the request as needed
+        );
         
-        setLoading(true);
-        try {
-          const response = await getProviderContent(
-            network.providerId,
-            (network as any).networkId
-          );
-          
-          const filtered = response.results.filter((item: any) => item.backdrop_path);
-          const top15 = filtered.slice(0, 15).map((item: any) => ({
-            ...item,
-            logoPath: null
-          }));
+        const filtered = response.results.filter((item: any) => item.backdrop_path);
+        const top15 = filtered.slice(0, 15).map((item: any) => ({
+          ...item,
+          logoPath: null
+        }));
 
-          setData(prev => ({ ...prev, [activeNetwork]: top15 }));
-          setLoading(false);
-        } catch (error) {
-          console.error("Error fetching network data:", error);
-          setLoading(false);
-        }
+        setData(prev => ({ ...prev, [activeNetwork]: top15 }));
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching network data:", error);
+        setLoading(false);
       }
-      fetchNetwork();
-    }, [activeNetwork]);
+    }
+    fetchNetwork();
+  }, [activeNetwork]);
 
   const currentItems = data[activeNetwork] || [];
 
@@ -125,49 +118,47 @@ export function WatchNowOn() {
   }
 
   return (
-    <section className="w-full py-10 px-0 overflow-visible relative group/section">
+    <section className="w-full py-10 px-0 overflow-visible relative">
       <div className="flex items-center justify-between mb-8 px-4">
         <h2 className="text-lg font-bold text-foreground uppercase tracking-[0.2em]">
           Watch Now On {activeNetworkLabel}
         </h2>
       </div>
       
-        <div 
-          ref={scrollRef}
-          className="flex overflow-x-auto gap-2 scrollbar-hide px-4 scroll-smooth mb-6 overscroll-x-contain"
-        >
-            {currentItems.map((item, index) => (
-                <Link
-                  key={`${item.id}-${activeNetwork}`}
-                  href={`/${item.media_type}/${item.id}`}
-                  className="relative flex-none w-[150px] sm:w-[170px] md:w-[200px] group"
-                >
-                    <div className="relative aspect-[2/3] w-full overflow-hidden shadow-lg cursor-pointer bg-zinc-900">
-                      <img
-                        src={getImageUrl(item.poster_path)}
-                        alt={item.title || item.name}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-  
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300 z-10">
-                        <div className="absolute bottom-2 left-2 px-2 py-0.5 bg-black/60 backdrop-blur-md border border-white/10 w-fit rounded-full flex items-center gap-1">
-                          <Star className="w-2.5 h-2.5 text-yellow-500 fill-yellow-500" />
-                          <p className="text-[10px] text-yellow-500 font-bold">
-                            {Math.floor(item.vote_average || 0)}
-                          </p>
-                        </div>
-                        {(item.release_date || item.first_air_date) && (
-                          <div className="absolute bottom-2 right-2 px-2 py-0.5 bg-black/60 backdrop-blur-md border border-white/10 w-fit rounded-full">
-                            <p className="text-[10px] text-white font-bold">
-                              {(item.release_date || item.first_air_date || "").split("-")[0]}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                </Link>
-            ))}
-        </div>
+      <div ref={scrollRef} className="flex overflow-x-auto gap-2 scrollbar-hide px-4 scroll-smooth mb-6 overscroll-x-contain">
+        {currentItems.map((item, index) => (
+          <motion.div
+            key={`${item.id}-${activeNetwork}`}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.04, duration: 0.3 }}
+            className="flex-none w-[150px] sm:w-[170px] md:w-[200px] group"
+          >
+            <Link href={`/${item.media_type}/${item.id}`} className="block">
+              <div className="aspect-[2/3] rounded-2xl overflow-hidden bg-zinc-900 shadow-lg">
+                <img
+                  src={getImageUrl(item.poster_path)}
+                  alt={item.title || item.name}
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              </div>
+            </Link>
+
+            {/* Rating Section */}
+            <div className="mt-2.5 px-0.5">
+              <p className="text-[13px] font-semibold text-white line-clamp-1 leading-tight">{item.title || item.name}</p>
+              <div className="flex items-center gap-1 mt-1 text-[11px] text-white/45">
+                {item.vote_average && (
+                  <>
+                    <Star className="w-2.5 h-2.5 fill-yellow-600 text-yellow-600 flex-shrink-0" />
+                    <span>{item.vote_average.toFixed(1)}</span>
+                  </>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
 
       <div className="flex items-center justify-between px-4 mt-2">
         <div className="flex items-center gap-6 overflow-x-auto scrollbar-hide">
@@ -176,16 +167,10 @@ export function WatchNowOn() {
           ))}
         </div>
         <div className="flex items-center gap-1 ml-4">
-          <button
-            onClick={() => scroll("left")}
-            className="p-1.5 rounded-full bg-zinc-900/80 text-white hover:bg-white hover:text-black transition-all border border-white/10"
-          >
+          <button onClick={() => scroll("left")} className="p-1.5 rounded-full bg-zinc-900/80 text-white hover:bg-white hover:text-black transition-all border border-white/10">
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <button
-            onClick={() => scroll("right")}
-            className="p-1.5 rounded-full bg-zinc-900/80 text-white hover:bg-white hover:text-black transition-all border border-white/10"
-          >
+          <button onClick={() => scroll("right")} className="p-1.5 rounded-full bg-zinc-900/80 text-white hover:bg-white hover:text-black transition-all border border-white/10">
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
