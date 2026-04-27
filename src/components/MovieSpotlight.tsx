@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { getTrending, getMediaImages, getGenres, getImageUrl, getMediaDetails } from "@/lib/tmdb";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star } from "lucide-react";
+import { Star, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SnakeLoader } from "@/components/ui/snake-loader";
 import { useGlobalLoading } from "@/hooks/useGlobalLoading";
@@ -177,10 +177,13 @@ export function MovieSpotlight() {
               )}
             </div>
 
-            {/* Tagline */}
-            {media.tagline && (
-              <p className="text-sm font-medium italic text-muted-foreground md:text-base">
-                {media.tagline}
+            {/* Overview */}
+            {media.overview && (
+              <p
+                className="line-clamp-2 text-sm text-zinc-300 md:text-base leading-relaxed max-w-xl"
+                style={{ fontFamily: "'Google Sans', sans-serif" }}
+              >
+                {media.overview}
               </p>
             )}
 
@@ -207,33 +210,18 @@ export function MovieSpotlight() {
             </div>
 
             {/* Actions */}
-            <div className="flex flex-col items-start pt-6">
-                <div className="relative flex flex-col items-start gap-2.5">
-                  <Link 
-                    href={`/${media.media_type}/${media.id}`}
-                    onClick={() => setIsLoading(true)}
-                    className="text-[10px] font-bold tracking-[0.4em] text-foreground uppercase transition-all hover:tracking-[0.5em] hover:text-primary pointer-events-auto"
-                  >
-                    Details
-                  </Link>
-                  <div className="h-[1px] w-20 bg-gradient-to-r from-primary to-transparent" />
-                </div>
+            <div className="flex items-center gap-3 pt-6">
+              <Link
+                href={`/${media.media_type}/${media.id}`}
+                onClick={() => setIsLoading(true)}
+                className="pointer-events-auto flex items-center gap-2 rounded-full bg-white/10 border border-white/15 backdrop-blur-md px-5 py-2.5 text-xs font-semibold text-white uppercase tracking-widest transition-all hover:bg-white/20 active:scale-95"
+              >
+                <Info className="h-4 w-4" />
+                More Info
+              </Link>
             </div>
           </motion.div>
         </AnimatePresence>
-      </div>
-
-      {/* Progress Indicators */}
-      <div className="absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 gap-2 pointer-events-auto">
-        {trendingList.map((_, idx) => (
-          <button
-            key={idx}
-            onClick={() => setCurrentIndex(idx)}
-            className={`h-1 rounded-full transition-all duration-300 ${
-              idx === currentIndex ? "w-8 bg-primary" : "w-2 bg-primary/20"
-            }`}
-          />
-        ))}
       </div>
 
       {/* Media Type (Bottom Right) */}
