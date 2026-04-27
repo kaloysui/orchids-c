@@ -43,7 +43,7 @@ export function Player({ type, tmdbId, season, episode, onBack }: PlayerProps) {
   const { theme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
   const [playerMode, setPlayerMode] = React.useState<"native" | "legacy">("legacy");
-    const [provider, setProvider] = React.useState("beech");
+    const [provider, setProvider] = React.useState("cedar");
     const [autoPlay, setAutoPlay] = React.useState(true);
     const { saveItem } = useContinueWatching();
     const [mediaDetails, setMediaDetails] = React.useState<any>(null);
@@ -61,7 +61,7 @@ export function Player({ type, tmdbId, season, episode, onBack }: PlayerProps) {
     React.useEffect(() => {
       setMounted(true);
       const savedAutoPlay = localStorage.getItem("player_autoplay") !== "false";
-    const savedProvider = localStorage.getItem("player_provider") || "beech";
+    const savedProvider = localStorage.getItem("player_provider") || "cedar";
         
         setAutoPlay(savedAutoPlay);
         setProvider(savedProvider);
