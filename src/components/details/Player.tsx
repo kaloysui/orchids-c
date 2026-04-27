@@ -61,7 +61,7 @@ export function Player({ type, tmdbId, season, episode, onBack }: PlayerProps) {
     React.useEffect(() => {
       setMounted(true);
       const savedAutoPlay = localStorage.getItem("player_autoplay") !== "false";
-    const savedProvider = localStorage.getItem("player_provider") || "buke";
+    const savedProvider = localStorage.getItem("player_provider") || "beech";
         
         setAutoPlay(savedAutoPlay);
         setProvider(savedProvider);
