@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useRef } from "react";
 import { getTVSeasonDetails, getImageUrl } from "@/lib/tmdb";
-import { motion } from "framer-motion";
-import { Download, Play, ChevronLeft, ChevronRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Star, Play, ChevronDown, Check } from "lucide-react";
 import { DownloadModal } from "./DownloadModal";
 
 interface TVEpisodesProps {
@@ -17,28 +17,22 @@ export function TVEpisodes({ tvId, seasons, onPlay, mediaItem }: TVEpisodesProps
   const [selectedSeason, setSelectedSeason] = useState(seasons[0]?.season_number || 1);
   const [episodes, setEpisodes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [downloadEpisode, setDownloadEpisode] = useState<{ season: number, episode: number } | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [downloadEpisode, setDownloadEpisode] = useState<{ season: number; episode: number } | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const seasonScrollRef = useRef<HTMLDivElement>(null);
+  const selectedSeasonLabel = `Season ${selectedSeason}`;
 
-  const scroll = (direction: "left" | "right") => {
-    if (!scrollRef.current) return;
-    const scrollAmount = 400;
-    scrollRef.current.scrollBy({
-      left: direction === "left" ? -scrollAmount : scrollAmount,
-      behavior: "smooth",
-    });
-  };
-
-  const scrollSeasons = (direction: "left" | "right") => {
-    if (!seasonScrollRef.current) return;
-    const scrollAmount = 200;
-    seasonScrollRef.current.scrollBy({
-      left: direction === "left" ? -scrollAmount : scrollAmount,
-      behavior: "smooth",
-    });
-  };
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     async function fetchEpisodes() {
@@ -56,148 +50,128 @@ export function TVEpisodes({ tvId, seasons, onPlay, mediaItem }: TVEpisodesProps
   }, [tvId, selectedSeason]);
 
   return (
-    <div className="px-6 py-12 md:px-16 lg:px-24">
-      <div className="mb-10 flex flex-col gap-6">
-        <h2 className="text-xl font-bold uppercase tracking-[0.2em] text-foreground">
+    <div className="mx-6 my-4 md:mx-16 lg:mx-24 rounded-2xl bg-zinc-900/60 border border-white/5 backdrop-blur-sm px-6 py-8">
+      {/* Header + Season Dropdown */}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xs font-black uppercase tracking-[0.25em] text-zinc-400">
           Episodes
         </h2>
 
-        {/* Season Tabs with Chevron */}
-        <div className="relative flex items-center gap-2">
-          {/* Left Chevron */}
+        {/* Custom Dropdown */}
+        <div className="relative" ref={dropdownRef}>
           <button
-            onClick={() => scrollSeasons("left")}
-            className="p-1.5 rounded-full bg-zinc-900/80 text-white hover:bg-white hover:text-black transition-all border border-white/10 z-10"
+            onClick={() => setDropdownOpen((v) => !v)}
+            className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-semibold pl-4 pr-3 py-2 rounded-xl border border-white/10 transition-colors"
           >
-            <ChevronLeft className="w-4 h-4" />
+            {selectedSeasonLabel}
+            <ChevronDown
+              className={`h-4 w-4 text-zinc-400 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
+            />
           </button>
 
-          {/* Scrollable Tabs */}
-          <div
-            ref={seasonScrollRef}
-            className="flex gap-3 overflow-x-auto scrollbar-hide pb-4 -mx-2 px-2"
-          >
-            {seasons.map((s: any) => (
-              <button
-                key={s.id}
-                onClick={() => setSelectedSeason(s.season_number)}
-                className={`flex-none px-6 py-3 rounded-full text-[11px] font-black uppercase tracking-[0.2em] border ${
-                  selectedSeason === s.season_number
-                    ? "bg-white text-black border-white"
-                    : "bg-zinc-900/50 text-zinc-500 border-white/5"
-                }`}
+          <AnimatePresence>
+            {dropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="absolute right-0 top-full mt-2 z-50 min-w-[160px] rounded-xl bg-zinc-800 border border-white/10 shadow-2xl overflow-hidden"
               >
-                Season {s.season_number}
-              </button>
-            ))}
-          </div>
-
-          {/* Right Chevron */}
-          <button
-            onClick={() => scrollSeasons("right")}
-            className="p-1.5 rounded-full bg-zinc-900/80 text-white hover:bg-white hover:text-black transition-all border border-white/10 z-10"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
+                <div className="max-h-64 overflow-y-auto py-1">
+                  {seasons.map((s: any) => (
+                    <button
+                      key={s.id}
+                      onClick={() => {
+                        setSelectedSeason(s.season_number);
+                        setDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between gap-3 px-4 py-2.5 text-sm font-medium text-left transition-colors ${
+                        selectedSeason === s.season_number
+                          ? "bg-white/10 text-white"
+                          : "text-zinc-300 hover:bg-white/5"
+                      }`}
+                    >
+                      Season {s.season_number}
+                      {selectedSeason === s.season_number && (
+                        <Check className="h-4 w-4 text-primary shrink-0" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
-      {/* Episodes Carousel */}
-      <div
-        ref={scrollRef}
-        className="flex gap-6 overflow-x-auto pb-10 scrollbar-hide"
-      >
-        {loading ? (
-          [1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="flex-none w-[300px] md:w-[400px] aspect-[16/10] bg-zinc-900 animate-pulse rounded-2xl"
-            />
-          ))
-        ) : (
-          episodes.map((ep, index) => (
-            <motion.div
-              key={ep.id}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className="flex-none w-[300px] md:w-[400px] cursor-pointer group"
-              onClick={() => onPlay?.(selectedSeason, ep.episode_number)}
-            >
-              <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-zinc-900 mb-6 shadow-2xl border border-white/5">
-                <img
-                  src={getImageUrl(
-                    ep.still_path ||
-                      seasons.find((s) => s.season_number === selectedSeason)
-                        ?.poster_path
-                  )}
-                  alt={ep.name}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-
-                {/* Play Icon */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none">
-                  <div className="bg-primary/20 backdrop-blur-md p-5 rounded-full border border-white/20 text-white transform scale-90 group-hover:scale-100 transition-transform shadow-2xl">
-                    <Play className="h-8 w-8 fill-current" />
-                  </div>
-                </div>
-
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent p-6 flex flex-col justify-between z-30">
-                  <div className="flex justify-between items-start">
-                    <span className="bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-[9px] font-black text-white uppercase tracking-[0.2em]">
-                      S{selectedSeason}
-                    </span>
-                    <span className="bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-[9px] font-black text-white uppercase tracking-[0.2em]">
-                      E{ep.episode_number}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-end gap-4">
-                    <h3 className="text-sm font-black text-white uppercase tracking-wider line-clamp-1">
-                      {ep.name}
-                    </h3>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setDownloadEpisode({ season: selectedSeason, episode: ep.episode_number });
-                      }}
-                      className="bg-primary/80 hover:bg-primary p-2 rounded-full border border-white/10 text-white transition-all active:scale-95"
-                      title="Download Episode"
-                    >
-                      <Download className="h-4 w-4" />
-                    </button>
-                  </div>
-
+      {/* Episode List — scrollable */}
+      <div className="flex flex-col gap-2 max-h-[560px] overflow-y-auto pr-1 scrollbar-hide">
+        {loading
+          ? [1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex gap-4 p-2 animate-pulse">
+                <div className="flex-none w-[140px] md:w-[180px] aspect-[16/9] rounded-xl bg-zinc-800" />
+                <div className="flex flex-col gap-2 flex-1 py-1">
+                  <div className="h-3 w-16 rounded bg-zinc-800" />
+                  <div className="h-5 w-40 rounded bg-zinc-800" />
+                  <div className="h-3 w-24 rounded bg-zinc-800" />
+                  <div className="h-3 w-full rounded bg-zinc-800" />
                 </div>
               </div>
+            ))
+          : episodes.map((ep, index) => (
+              <motion.div
+                key={ep.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.03 }}
+                onClick={() => onPlay?.(selectedSeason, ep.episode_number)}
+                className="flex gap-4 cursor-pointer group rounded-xl p-2 hover:bg-white/5 transition-colors"
+              >
+                {/* Thumbnail */}
+                <div className="relative flex-none w-[140px] md:w-[180px] aspect-[16/9] rounded-xl overflow-hidden bg-zinc-800">
+                  <img
+                    src={getImageUrl(
+                      ep.still_path ||
+                        seasons.find((s) => s.season_number === selectedSeason)?.poster_path
+                    )}
+                    alt={ep.name}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/50">
+                    <Play className="h-7 w-7 fill-white text-white drop-shadow-lg" />
+                  </div>
+                </div>
 
-              <p className="px-2 text-[11px] font-medium text-zinc-500 line-clamp-2 leading-relaxed uppercase tracking-widest">
-                {ep.overview || "No overview available for this episode."}
-              </p>
-            </motion.div>
-          ))
-        )}
+                {/* Info */}
+                <div className="flex flex-col gap-1 flex-1 min-w-0 py-1">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[11px] font-black text-yellow-400 uppercase tracking-wider shrink-0">
+                      E{ep.episode_number}
+                    </span>
+                    <h3 className="text-sm font-bold text-white truncate md:text-base">
+                      {ep.name}
+                    </h3>
+                  </div>
+
+                  {ep.vote_average > 0 && (
+                    <div className="flex items-center gap-1">
+                      <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                      <span className="text-xs font-semibold text-zinc-400">
+                        {ep.vote_average.toFixed(1)}
+                      </span>
+                    </div>
+                  )}
+
+                  <p className="text-xs leading-relaxed text-zinc-500 line-clamp-2 mt-0.5">
+                    {ep.overview || "No overview available."}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
       </div>
 
-      {/* Scroll Buttons for Episodes */}
-      <div className="flex items-center justify-end px-4 gap-1">
-        <button
-          onClick={() => scroll("left")}
-          className="p-1.5 rounded-full bg-zinc-900/80 text-white hover:bg-white hover:text-black transition-all border border-white/10"
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </button>
-        <button
-          onClick={() => scroll("right")}
-          className="p-1.5 rounded-full bg-zinc-900/80 text-white hover:bg-white hover:text-black transition-all border border-white/10"
-        >
-          <ChevronRight className="w-4 h-4" />
-        </button>
-      </div>
-
-      <DownloadModal 
+      <DownloadModal
         isOpen={!!downloadEpisode}
         onClose={() => setDownloadEpisode(null)}
         mediaItem={mediaItem}
