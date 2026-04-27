@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
-import { ArrowLeft, Layers, ChevronDown, Check } from "lucide-react";
+import { ChevronLeft, Layers, ChevronDown, Check } from "lucide-react";
 import React from "react";
 import { useContinueWatching } from "@/hooks/useContinueWatching";
 import { getMediaDetails, getMediaImages } from "@/lib/tmdb";
@@ -279,7 +279,7 @@ export function Player({ type, tmdbId, season, episode, onBack }: PlayerProps) {
               onClick={onBack}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white/70 backdrop-blur-md transition-all hover:bg-black/60 hover:text-white hover:scale-110 active:scale-95"
             >
-              <ArrowLeft className="h-6 w-6" />
+              <ChevronLeft className="h-6 w-6" />
             </button>
 
             {/* Sources Dropdown */}
