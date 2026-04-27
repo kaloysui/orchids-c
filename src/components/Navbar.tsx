@@ -6,25 +6,22 @@ import { usePathname } from "next/navigation";
 import { FaDiscord } from "react-icons/fa";
 import {
   Home,
-  Play,
   Film,
   Tv,
   Settings,
   Search,
-  Bookmark,
   User,
   LayoutGrid,
-  ChevronDown,
   LogOut,
   UserCircle,
-  Loader2,
-  GalleryVerticalEnd,
   Trophy,
-  HardDrive,
-    Library,
-    Music,
-    Code2
-  } from "lucide-react";
+  Library,
+  Music,
+  Code2,
+  Menu,
+  X,
+  GalleryVerticalEnd,
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import {
@@ -37,26 +34,30 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { GenreModal } from "./GenreModal";
 import { AuthModal } from "./AuthModal";
+import { SearchModal } from "./SearchModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useGlobalLoading } from "@/hooks/useGlobalLoading";
 
-const browseItems = [
+const mainNavItems = [
   { name: "Home", href: "/", icon: Home },
-  { name: "Music", href: "/music", icon: Music },
   { name: "Movies", href: "/movies", icon: Film },
   { name: "TV Shows", href: "/tv-shows", icon: Tv },
+];
+
+const menuModalItems = [
+  { name: "Music", href: "/music", icon: Music },
   { name: "Studios", href: "/studios", icon: LayoutGrid },
   { name: "Collections", href: "/collections", icon: Library },
+  { name: "Watchlist", href: "/watchlist", icon: GalleryVerticalEnd },
   { name: "Live Sports", href: "/live-sports", icon: Trophy },
   { name: "Genres", href: "#", icon: LayoutGrid, isGenre: true },
-  { name: "API", href: "/api-docs", icon: Code2 },
+  { name: "API Docs", href: "/api-docs", icon: Code2 },
   {
     name: "Discord",
-    href: "https://discord.gg/MTZxF6uVd", 
+    href: "https://discord.gg/MTZxF6uVd",
     icon: FaDiscord,
     external: true,
   },
-  { name: "Settings", href: "/settings", icon: Settings },
 ];
 
 export function Navbar() {
@@ -64,6 +65,8 @@ export function Navbar() {
   const [isGenreModalOpen, setIsGenreModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authView, setAuthView] = useState<"login" | "register">("login");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { user, supabase } = useAuth();
   const { setIsLoading } = useGlobalLoading();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -74,13 +77,11 @@ export function Navbar() {
     } else {
       setAvatarUrl(null);
     }
-
     const handleProfileUpdate = () => {
       if (user) getProfile();
     };
-
-    window.addEventListener('profile-updated', handleProfileUpdate);
-    return () => window.removeEventListener('profile-updated', handleProfileUpdate);
+    window.addEventListener("profile-updated", handleProfileUpdate);
+    return () => window.removeEventListener("profile-updated", handleProfileUpdate);
   }, [user]);
 
   async function getProfile() {
@@ -90,11 +91,8 @@ export function Navbar() {
         .select("avatar_url")
         .eq("id", user?.id)
         .single();
-
       if (error) throw error;
-      if (data?.avatar_url) {
-        downloadImage(data.avatar_url);
-      }
+      if (data?.avatar_url) downloadImage(data.avatar_url);
     } catch (error) {
       console.log("Error loading profile avatar", error);
     }
@@ -121,197 +119,256 @@ export function Navbar() {
     setIsAuthModalOpen(true);
   };
 
-  // Hide Navbar on Movie and TV Details pages, Live Sports Player, and embed pages
-  const isDetailsPage = pathname.startsWith('/movie/') || pathname.startsWith('/tv/') || pathname.startsWith('/live-sports/play/') || pathname.startsWith('/music/play/') || pathname.startsWith('/embed/') || pathname === '/api-docs';
-  
+  const isDetailsPage =
+    pathname.startsWith("/movie/") ||
+    pathname.startsWith("/tv/") ||
+    pathname.startsWith("/live-sports/play/") ||
+    pathname.startsWith("/music/play/") ||
+    pathname.startsWith("/embed/") ||
+    pathname === "/api-docs";
+
   if (isDetailsPage) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 flex justify-center w-full px-2 md:px-4 py-4 pointer-events-none">
-      <nav className="w-full max-w-5xl h-14 md:h-16 flex items-center justify-between relative bg-transparent border-none shadow-none">
-        
-        {/* Logo and Browse (Separate) */}
-        <div className="flex items-center gap-1.5 md:gap-4 pointer-events-auto">
-            {/* Logo - No background */}
-            <Link 
-              href="/" 
-              onClick={() => setIsLoading(true)}
-              className="transition-all active:scale-95 hover:scale-105"
-            >
-            <div className="p-0 md:p-1.5">
-              <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-7 h-7 md:w-9 md:h-9">
-                <path fillRule="evenodd" clipRule="evenodd" d="M16 8C16 12.4183 12.4183 16 8 16C3.58172 16 0 12.4183 0 8C0 3.58172 3.58172 0 8 0C12.4183 0 16 3.58172 16 8ZM9.25 3.75C9.25 4.44036 8.69036 5 8 5C7.30964 5 6.75 4.44036 6.75 3.75C6.75 3.05964 7.30964 2.5 8 2.5C8.69036 2.5 9.25 3.05964 9.25 3.75ZM12 8H9.41901L11.2047 13H9.081L8 9.97321L6.91901 13H4.79528L6.581 8H4V6H12V8Z" className="fill-primary" />
-              </svg>
-            </div>
-          </Link>
+    <>
+      {/* Bottom Floating Navbar */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center px-4 pb-5 pointer-events-none">
+        <nav className="flex items-center pointer-events-auto bg-neutral-950/85 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl px-2 py-2 gap-0.5">
 
-          {/* Browse - With background */}
-          <div className="bg-card/80 backdrop-blur-xl border border-border shadow-xl rounded-full px-1 py-1">
+          {/* Main Nav Items */}
+          {mainNavItems.map((item) => {
+            const Icon = item.icon;
+            const isActive =
+              item.href === "/"
+                ? pathname === "/"
+                : pathname.startsWith(item.href);
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={() => setIsLoading(true)}
+                className={cn(
+                  "flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-200",
+                  isActive
+                    ? "text-white bg-white/15"
+                    : "text-white/45 hover:text-white/80 hover:bg-white/8"
+                )}
+                title={item.name}
+              >
+                <Icon className="w-5 h-5" strokeWidth={isActive ? 2.2 : 1.8} />
+              </Link>
+            );
+          })}
+
+          {/* Search Button */}
+          <button
+            onClick={() => setIsSearchOpen(true)}
+            className="flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-200 text-white/45 hover:text-white/80 hover:bg-white/8"
+            title="Search"
+          >
+            <Search className="w-5 h-5" strokeWidth={1.8} />
+          </button>
+
+          {/* Menu Button */}
+          <button
+            onClick={() => setIsMenuOpen(true)}
+            className="flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-200 text-white/45 hover:text-white/80 hover:bg-white/8"
+            title="Menu"
+          >
+            <Menu className="w-5 h-5" strokeWidth={1.8} />
+          </button>
+
+          {/* Divider */}
+          <div className="w-px h-7 bg-white/15 mx-1.5 rounded-full" />
+
+          {/* User */}
+          {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 text-sm font-medium text-foreground transition-all outline-none cursor-pointer px-4 py-2 md:py-2.5 rounded-full hover:bg-accent group">
-                  <Play className="w-4 h-4 md:w-5 md:h-5 fill-primary text-primary transition-transform group-hover:scale-110" />
-                  <span className="hidden sm:inline">Browse</span>
-                  <ChevronDown className="w-4 h-4 opacity-50 group-hover:rotate-180 transition-transform duration-300" />
+                <button
+                  className="flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-200 text-white/45 hover:text-white/80 hover:bg-white/8 outline-none overflow-hidden"
+                  title="Profile"
+                >
+                  {avatarUrl ? (
+                    <Avatar className="h-7 w-7">
+                      <AvatarImage src={avatarUrl} alt="Avatar" className="object-cover" />
+                      <AvatarFallback>
+                        <User className="w-4 h-4" />
+                      </AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <User className="w-5 h-5" strokeWidth={1.8} />
+                  )}
                 </button>
               </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="start"
-                      sideOffset={12}
-                      className="w-52 bg-card/95 border-border text-foreground backdrop-blur-2xl shadow-2xl p-1.5 rounded-2xl animate-in fade-in zoom-in-95 duration-200"
-                    >
-                      {browseItems.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = pathname === item.href;
-
-                        if (item.isGenre) {
-                          return (
-                            <DropdownMenuItem
-                              key={item.name}
-                              onSelect={() => setIsGenreModalOpen(true)}
-                              className={cn(
-                                "flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all focus:bg-accent focus:text-accent-foreground",
-                              )}
-                            >
-                              <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
-                              <span className="text-sm font-medium">{item.name}</span>
-                            </DropdownMenuItem>
-                          );
-                        }
-
-                        if (item.external) {
-                          return (
-                            <DropdownMenuItem key={item.name} asChild className="focus:bg-accent cursor-pointer rounded-xl">
-                              <a href={item.href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-3 py-2.5">
-                                <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
-                                <span className="text-sm font-medium">{item.name}</span>
-                              </a>
-                            </DropdownMenuItem>
-                          );
-                        }
-
-                        return (
-                          <DropdownMenuItem
-                            key={item.name}
-                            asChild
-                            className="focus:bg-accent focus:text-accent-foreground cursor-pointer rounded-xl transition-all"
-                          >
-                            <Link
-                              href={item.href}
-                              onClick={() => setIsLoading(true)}
-                              className={cn(
-                                "flex items-center gap-3 px-3 py-2.5",
-                                isActive && "text-primary"
-                              )}
-                            >
-                              <Icon className={cn("w-4 h-4 shrink-0", isActive ? "text-primary" : "text-muted-foreground")} />
-                              <span className="text-sm font-medium">{item.name}</span>
-                              {isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />}
-                            </Link>
-                          </DropdownMenuItem>
-                        );
-                      })}
-                    </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-
-        {/* Right Side Items: Individual Search, Watchlist, Profile */}
-        <div className="flex items-center gap-2 md:gap-3 pointer-events-auto">
-            {/* Search */}
-            <div className="bg-card/80 backdrop-blur-xl border border-border shadow-xl rounded-full p-1">
-              <Link
-                href="/search"
-                onClick={() => setIsLoading(true)}
-                className={cn(
-                  "flex items-center justify-center transition-all p-2.5 md:p-3 rounded-full group",
-                  pathname === "/search" ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                )}
-                title="Search"
+              <DropdownMenuContent
+                side="top"
+                align="end"
+                sideOffset={12}
+                className="w-56 bg-neutral-950/95 border-white/10 text-white backdrop-blur-2xl shadow-2xl p-2 rounded-2xl animate-in fade-in slide-in-from-bottom-2 duration-200"
               >
-                <Search className="w-5 h-5 transition-transform group-hover:scale-110" />
-              </Link>
-            </div>
-
-            {/* Watchlist */}
-            <div className="bg-card/80 backdrop-blur-xl border border-border shadow-xl rounded-full p-1">
-              <Link
-                href="/watchlist"
-                onClick={() => setIsLoading(true)}
-                className={cn(
-                  "flex items-center justify-center transition-all p-2.5 md:p-3 rounded-full group",
-                  pathname === "/watchlist" ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                )}
-                title="Watchlist"
-              >
-                <GalleryVerticalEnd className="w-5 h-5 transition-transform group-hover:scale-110" />
-              </Link>
-            </div>
-
-          {/* Profile */}
-          <div className="bg-card/80 backdrop-blur-xl border border-border shadow-xl rounded-full p-1">
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex h-10 w-10 md:h-11 md:w-11 items-center justify-center transition-all rounded-full group text-muted-foreground hover:text-foreground hover:bg-accent outline-none overflow-hidden">
-                    {avatarUrl ? (
-                      <Avatar className="h-full w-full">
-                        <AvatarImage src={avatarUrl} alt="Avatar" className="object-cover" />
-                        <AvatarFallback><User className="w-5 h-5" /></AvatarFallback>
-                      </Avatar>
-                    ) : (
-                      <User className="w-5 h-5 transition-transform group-hover:scale-110" />
-                    )}
-                  </button>
-                </DropdownMenuTrigger>
-
-                <DropdownMenuContent 
-                  align="end" 
-                  sideOffset={12}
-                  className="w-56 bg-card border-border text-foreground backdrop-blur-2xl shadow-2xl p-2 rounded-2xl animate-in fade-in zoom-in-95 duration-200"
+                <div className="px-3 py-2">
+                  <p className="text-xs font-medium text-white/40 truncate">{user.email}</p>
+                </div>
+                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuItem asChild className="focus:bg-white/10 cursor-pointer rounded-xl">
+                  <Link href="/profile" className="flex items-center gap-3 w-full py-2.5 px-3">
+                    <UserCircle className="w-4 h-4 text-white/60" />
+                    <span className="font-medium text-sm">Profile</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={handleSignOut}
+                  className="focus:bg-red-500/15 focus:text-red-400 cursor-pointer rounded-xl flex items-center gap-3 w-full py-2.5 px-3"
                 >
-                  <div className="px-3 py-2">
-                    <p className="text-xs font-medium text-muted-foreground truncate">{user.email}</p>
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild className="focus:bg-accent cursor-pointer rounded-xl">
-                    <Link href="/profile" className="flex items-center gap-3 w-full py-2.5 px-2">
-                      <UserCircle className="w-4 h-4" />
-                      <span className="font-medium">Profile</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onSelect={handleSignOut}
-                    className="focus:bg-destructive/10 focus:text-destructive cursor-pointer rounded-xl flex items-center gap-3 w-full py-2.5 px-2"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span className="font-medium">Log Out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <button
-                onClick={() => openAuth("login")}
-                className="flex h-10 w-10 md:h-11 md:w-11 items-center justify-center transition-all rounded-full group text-muted-foreground hover:text-foreground hover:bg-accent outline-none"
-                title="Login"
-              >
-                <User className="w-5 h-5 transition-transform group-hover:scale-110 text-primary" />
-              </button>
+                  <LogOut className="w-4 h-4" />
+                  <span className="font-medium text-sm">Log Out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <button
+              onClick={() => openAuth("login")}
+              className="flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-200 text-white/60 hover:text-white hover:bg-white/8 outline-none"
+              title="Login"
+            >
+              <User className="w-5 h-5" strokeWidth={1.8} />
+            </button>
+          )}
+
+          {/* Settings */}
+          <Link
+            href="/settings"
+            onClick={() => setIsLoading(true)}
+            className={cn(
+              "flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-200",
+              pathname === "/settings"
+                ? "text-white bg-white/15"
+                : "text-white/45 hover:text-white/80 hover:bg-white/8"
             )}
+            title="Settings"
+          >
+            <Settings className="w-5 h-5" strokeWidth={1.8} />
+          </Link>
+        </nav>
+      </div>
+
+      {/* Menu Modal */}
+      {isMenuOpen && (
+        <div
+          className="fixed inset-0 z-[60] flex items-end justify-center"
+          onClick={() => setIsMenuOpen(false)}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+
+          {/* Modal Sheet */}
+          <div
+            className="relative w-full max-w-md mx-4 mb-24 bg-neutral-950/95 border border-white/10 backdrop-blur-2xl rounded-3xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Handle bar */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-white/20" />
+            </div>
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-3">
+              <span className="text-sm font-semibold text-white/60 tracking-widest uppercase">
+                Menu
+              </span>
+              <button
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center justify-center w-8 h-8 rounded-full text-white/40 hover:text-white hover:bg-white/10 transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Grid of items */}
+            <div className="grid grid-cols-4 gap-2 px-4 pb-6 pt-1">
+              {menuModalItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = !item.isGenre && !item.external && pathname.startsWith(item.href);
+
+                if (item.isGenre) {
+                  return (
+                    <button
+                      key={item.name}
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setIsGenreModalOpen(true);
+                      }}
+                      className="flex flex-col items-center justify-center gap-2 rounded-2xl py-4 px-2 bg-white/5 hover:bg-white/10 active:scale-95 transition-all duration-200"
+                    >
+                      <Icon className="w-6 h-6 text-white/60" />
+                      <span className="text-[11px] font-medium text-white/50 text-center leading-tight">
+                        {item.name}
+                      </span>
+                    </button>
+                  );
+                }
+
+                if (item.external) {
+                  return (
+                    <a
+                      key={item.name}
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex flex-col items-center justify-center gap-2 rounded-2xl py-4 px-2 bg-white/5 hover:bg-white/10 active:scale-95 transition-all duration-200"
+                    >
+                      <Icon className="w-6 h-6 text-white/60" />
+                      <span className="text-[11px] font-medium text-white/50 text-center leading-tight">
+                        {item.name}
+                      </span>
+                    </a>
+                  );
+                }
+
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      setIsLoading(true);
+                    }}
+                    className={cn(
+                      "flex flex-col items-center justify-center gap-2 rounded-2xl py-4 px-2 active:scale-95 transition-all duration-200",
+                      isActive
+                        ? "bg-white/15 text-white"
+                        : "bg-white/5 hover:bg-white/10 text-white/60"
+                    )}
+                  >
+                    <Icon className={cn("w-6 h-6", isActive ? "text-white" : "text-white/60")} />
+                    <span className="text-[11px] font-medium text-center leading-tight">
+                      {item.name}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         </div>
+      )}
 
-        <GenreModal 
-          isOpen={isGenreModalOpen} 
-          onClose={() => setIsGenreModalOpen(false)} 
-        />
-        
-        <AuthModal 
-          isOpen={isAuthModalOpen} 
-          onClose={() => setIsAuthModalOpen(false)}
-          initialView={authView}
-        />
-      </nav>
-    </div>
+      <GenreModal
+        isOpen={isGenreModalOpen}
+        onClose={() => setIsGenreModalOpen(false)}
+      />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        initialView={authView}
+      />
+
+      <SearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+      />
+    </>
   );
 }
