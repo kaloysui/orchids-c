@@ -197,6 +197,14 @@ export function DetailsHero({ media, type, onPlay }: DetailsHeroProps) {
                           </div>
                           <span className="text-xl font-black">{media.vote_average?.toFixed(1)}</span>
                         </div>
+                        {(media.release_date || media.first_air_date) && (
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span className="text-zinc-500">·</span>
+                            <span className="text-base font-semibold text-zinc-300">
+                              {new Date(media.release_date || media.first_air_date).getFullYear()}
+                            </span>
+                          </div>
+                        )}
                         <div className="flex flex-wrap gap-2 max-w-full">
                           {media.genres?.map((genre: any) => (
                             <Badge
@@ -212,26 +220,6 @@ export function DetailsHero({ media, type, onPlay }: DetailsHeroProps) {
                     )}
                   </AnimatePresence>
     
-                  {/* Overview - FADES OUT */}
-                  <AnimatePresence>
-                    {!showVideo && (
-                      <motion.p 
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ 
-                          opacity: 1,
-                          height: "auto",
-                        }}
-                        exit={{ 
-                          opacity: 0,
-                          height: 0,
-                        }}
-                        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
-                        className="line-clamp-3 text-sm leading-relaxed text-zinc-300 md:text-base lg:text-lg lg:line-clamp-4 max-w-2xl font-medium overflow-hidden"
-                      >
-                        {media.overview}
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
     
                 {/* Actions - ALWAYS VISIBLE */}
                 <motion.div 
