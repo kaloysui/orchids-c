@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { getProviderContent, getImageUrl } from "@/lib/tmdb";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { Play, Plus, ChevronLeft, ChevronRight, Star } from "lucide-react";
 
 interface Media {
   id: number;
@@ -42,15 +42,18 @@ export function WatchNowOn() {
       
       setLoading(true);
       try {
-        const response = await getProviderContent(network.providerId);
-
-        // Filter out items without a backdrop
+        const response = await getProviderContent(
+          network.providerId,
+          network.providerId // You may need to adjust the request as needed
+        );
+        
         const filtered = response.results.filter((item: any) => item.backdrop_path);
-
-        setData(prev => ({
-          ...prev,
-          [activeNetwork]: filtered.slice(0, 15), // Limit to top 15 items
+        const top15 = filtered.slice(0, 15).map((item: any) => ({
+          ...item,
+          logoPath: null
         }));
+
+        setData(prev => ({ ...prev, [activeNetwork]: top15 }));
         setLoading(false);
       } catch (error) {
         console.error("Error fetching network data:", error);
@@ -75,6 +78,25 @@ export function WatchNowOn() {
       });
     }
   };
+
+  const NetworkTab = ({ id, label }: { id: string, label: string }) => (
+    <button
+      onClick={() => setActiveNetwork(id)}
+      className={`relative py-1.5 text-[10px] font-bold tracking-[0.2em] transition-all whitespace-nowrap ${
+        activeNetwork === id 
+          ? "text-primary" 
+          : "text-muted-foreground hover:text-foreground"
+      }`}
+    >
+      {label}
+      {activeNetwork === id && (
+        <motion.div
+          layoutId="activeNetworkTab"
+          className="absolute -bottom-1 left-0 w-full h-[2px] bg-white shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+        />
+      )}
+    </button>
+  );
 
   const activeNetworkLabel = NETWORKS.find(n => n.id === activeNetwork)?.label;
 
@@ -103,74 +125,52 @@ export function WatchNowOn() {
         </h2>
       </div>
       
-      <div className="flex items-center gap-6 overflow-x-auto scrollbar-hide px-4 mb-5">
-        {NETWORKS.map((network) => (
-          <button
-            key={network.id}
-            onClick={() => setActiveNetwork(network.id)}
-            className={`py-1.5 text-[10px] font-bold tracking-[0.2em] transition-all whitespace-nowrap ${
-              activeNetwork === network.id ? "text-primary" : "text-muted-foreground hover:text-foreground"
-            }`}
+      <div ref={scrollRef} className="flex overflow-x-auto gap-2 scrollbar-hide px-4 scroll-smooth mb-6 overscroll-x-contain">
+        {currentItems.map((item, index) => (
+          <motion.div
+            key={`${item.id}-${activeNetwork}`}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.04, duration: 0.3 }}
+            className="flex-none w-[150px] sm:w-[170px] md:w-[200px] group"
           >
-            {network.label}
-          </button>
+            <Link href={`/${item.media_type}/${item.id}`} className="block">
+              <div className="aspect-[2/3] rounded-2xl overflow-hidden bg-zinc-900 shadow-lg">
+                <img
+                  src={getImageUrl(item.poster_path)}
+                  alt={item.title || item.name}
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              </div>
+            </Link>
+
+            {/* Rating Section */}
+            <div className="mt-2.5 px-0.5">
+              <p className="text-[13px] font-semibold text-white line-clamp-1 leading-tight">{item.title || item.name}</p>
+              <div className="flex items-center gap-1 mt-1 text-[11px] text-white/45">
+                {item.vote_average && (
+                  <>
+                    <Star className="w-2.5 h-2.5 fill-yellow-600 text-yellow-600 flex-shrink-0" />
+                    <span>{item.vote_average.toFixed(1)}</span>
+                  </>
+                )}
+              </div>
+            </div>
+          </motion.div>
         ))}
       </div>
 
-      <div ref={scrollRef} className="flex overflow-x-auto gap-2 scrollbar-hide px-4 scroll-smooth mb-6 overscroll-x-contain">
-        {currentItems.map((item, index) => {
-          const title = item.title || item.name || "";
-          const year = (item.release_date || item.first_air_date || "").slice(0, 4);
-          const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
-
-          return (
-            <motion.div
-              key={`${item.id}-${activeNetwork}`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.04, duration: 0.3 }}
-              className="flex-none w-[150px] sm:w-[170px] md:w-[200px] group"
-            >
-              <Link href={`/${item.media_type}/${item.id}`} className="block">
-                <div className="aspect-[2/3] rounded-2xl overflow-hidden bg-zinc-900 shadow-lg">
-                  <img
-                    src={getImageUrl(item.poster_path)}
-                    alt={title}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
-              </Link>
-
-              {/* Info below */}
-              <div className="mt-2.5 px-0.5">
-                <p className="text-[13px] font-semibold text-white line-clamp-1 leading-tight">{title}</p>
-                <div className="flex items-center gap-1 mt-1 text-[11px] text-white/45">
-                  {rating && (
-                    <>
-                      <Star className="w-2.5 h-2.5 fill-yellow-600 text-yellow-600 flex-shrink-0" />
-                      <span>{rating}</span>
-                    </>
-                  )}
-                  {year && <><span>{year}</span></>}
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
-      </div>
-
       <div className="flex items-center justify-between px-4 mt-2">
+        <div className="flex items-center gap-6 overflow-x-auto scrollbar-hide">
+          {NETWORKS.map((network) => (
+            <NetworkTab key={network.id} id={network.id} label={network.label} />
+          ))}
+        </div>
         <div className="flex items-center gap-1 ml-4">
-          <button
-            onClick={() => scroll("left")}
-            className="p-1.5 rounded-full bg-zinc-900/80 text-white hover:bg-white hover:text-black transition-all border border-white/10"
-          >
+          <button onClick={() => scroll("left")} className="p-1.5 rounded-full bg-zinc-900/80 text-white hover:bg-white hover:text-black transition-all border border-white/10">
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <button
-            onClick={() => scroll("right")}
-            className="p-1.5 rounded-full bg-zinc-900/80 text-white hover:bg-white hover:text-black transition-all border border-white/10"
-          >
+          <button onClick={() => scroll("right")} className="p-1.5 rounded-full bg-zinc-900/80 text-white hover:bg-white hover:text-black transition-all border border-white/10">
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
