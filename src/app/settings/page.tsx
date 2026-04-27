@@ -37,13 +37,13 @@ const providers = [
     const [mounted, setMounted] = React.useState(false);
 
     const [autoPlay, setAutoPlay] = React.useState(true);
-    const [defaultProvider, setDefaultProvider] = React.useState("buke");
+    const [defaultProvider, setDefaultProvider] = React.useState("beech");
     const [adsEnabled, setAdsEnabled] = React.useState(true);
   
     React.useEffect(() => {
       setMounted(true);
       const savedAutoPlay = localStorage.getItem("player_autoplay") !== "false";
-      let savedProvider = localStorage.getItem("player_provider") || "buke";
+      let savedProvider = localStorage.getItem("player_provider") || "beech";
     const savedAds = localStorage.getItem("ads_enabled") !== "false"; // Default to true
     
     // Migration logic
