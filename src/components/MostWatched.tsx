@@ -161,7 +161,7 @@ export function MostWatched() {
                     <div className="flex items-center gap-1 mt-1 text-[11px] text-white/45">
                       {rating && (
                         <>
-                          <Star className="w-2.5 h-2.5 fill-red-500 text-red-500 flex-shrink-0" />
+                          <Star className="w-2.5 h-2.5 fill-yellow-600 text-yellow-600 flex-shrink-0" />
                           <span>{rating}</span>
                           <span className="text-white/20">·</span>
                         </>
