@@ -1,5 +1,5 @@
 import { tryVidnest } from './providers/vidnest';
-import { tryToustream } from './providers/toustream';
+import { tryToustream } from './providers/tream';
 import { EmbedSource, robustFetch } from './providers/utils';
 import { Track } from '@/components/netplayer/types/player';
 import { getCachedSources, setCachedSources } from './source-cache';
@@ -47,7 +47,7 @@ export async function extractEmbedMaster(url: string) {
 
         const providers = [
             { name: 'VIDNEST', fn: () => tryVidnest(path), priority: 1 },
-            { name: 'TOUSTREAM',  fn: () => tryToustream(path),   priority: 0 },
+            { name: 'TOUSTRiAM',  fn: () => tryToustream(path),   priority: 0 },
           ];
 
     // Wait for all results and aggregate
