@@ -2,11 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AnimatePresence, motion } from "framer-motion";
 import { getGenresByType } from "@/lib/tmdb";
 import { Film, Tv, X } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface Genre {
   id: number;
@@ -18,116 +16,127 @@ interface GenreModalProps {
   onClose: () => void;
 }
 
+type MediaTab = "movie" | "tv";
+
 export function GenreModal({ isOpen, onClose }: GenreModalProps) {
   const [movieGenres, setMovieGenres] = useState<Genre[]>([]);
   const [tvGenres, setTvGenres] = useState<Genre[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<MediaTab>("movie");
   const router = useRouter();
 
   useEffect(() => {
-    async function fetchGenres() {
-      try {
-        const [movie, tv] = await Promise.all([
-          getGenresByType("movie"),
-          getGenresByType("tv"),
-        ]);
+    if (!isOpen) return;
+    setIsLoading(true);
+    Promise.all([getGenresByType("movie"), getGenresByType("tv")])
+      .then(([movie, tv]) => {
         setMovieGenres(movie);
         setTvGenres(tv);
-      } catch (error) {
-        console.error("Failed to fetch genres:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    if (isOpen) {
-      fetchGenres();
-    }
+      })
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
   }, [isOpen]);
 
-  const handleGenreClick = (type: "movie" | "tv", id: number) => {
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [isOpen, onClose]);
+
+  const handleGenreClick = (type: MediaTab, id: number) => {
     router.push(`/discover?type=${type}&id=${id}`);
     onClose();
   };
 
+  const genres = activeTab === "movie" ? movieGenres : tvGenres;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl bg-background/90 border-border/50 text-foreground backdrop-blur-xl p-0 overflow-hidden rounded-[3rem] outline-none shadow-2xl">
-        <DialogHeader className="p-10 pb-4 bg-transparent border-none">
-          <div className="flex flex-col items-center gap-2">
-            <div className="w-12 h-1.5 bg-muted rounded-full mb-4 md:hidden" />
-            <DialogTitle className="text-4xl md:text-5xl font-black tracking-tighter uppercase italic">
-              Genres
-            </DialogTitle>
-            <p className="text-muted-foreground font-medium uppercase tracking-[0.2em] text-[10px]">Select your vibe</p>
-          </div>
-        </DialogHeader>
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[60] flex items-end justify-center">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={onClose}
+          />
 
-        <div className="p-6 md:p-10 pt-4 max-h-[70vh] overflow-y-auto overscroll-contain">
-          <Tabs defaultValue="movie" className="w-full flex flex-col items-center">
+          {/* Bottom Sheet */}
+          <motion.div
+            initial={{ y: "100%", opacity: 0.5 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: "100%", opacity: 0 }}
+            transition={{ type: "spring", damping: 32, stiffness: 320, mass: 0.9 }}
+            className="relative w-full max-w-md mx-4 mb-24 bg-neutral-950/95 border border-white/10 backdrop-blur-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+            style={{ maxHeight: "75vh" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Handle */}
+            <div className="flex justify-center pt-3 pb-0 flex-shrink-0">
+              <div className="w-10 h-1 rounded-full bg-white/20" />
+            </div>
 
-          <TabsList className="bg-muted/50 p-1 mb-10 rounded-full border border-border/50 backdrop-blur-xl">
-            <TabsTrigger value="movie" className="flex items-center gap-2 px-8 py-2.5 rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-transform duration-300 active:scale-95 text-xs font-bold uppercase tracking-wider">
-              <Film className="w-3.5 h-3.5" />
-              Movies
-            </TabsTrigger>
-            <TabsTrigger value="tv" className="flex items-center gap-2 px-8 py-2.5 rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-transform duration-300 active:scale-95 text-xs font-bold uppercase tracking-wider">
-              <Tv className="w-3.5 h-3.5" />
-              TV Shows
-            </TabsTrigger>
-          </TabsList>
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 pt-3 pb-3 flex-shrink-0">
+              <h2 className="text-xl font-bold tracking-tight">Genres</h2>
+              <button
+                onClick={onClose}
+                className="flex items-center justify-center w-8 h-8 rounded-full text-white/40 hover:text-white hover:bg-white/10 transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
-          <TabsContent value="movie" className="mt-0 outline-none w-full will-change-transform">
-            {isLoading ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {[...Array(12)].map((_, i) => (
-                  <div key={i} className="h-16 bg-muted/30 rounded-2xl animate-pulse" />
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {movieGenres.map((genre) => (
-                  <button
-                    key={genre.id}
-                    onClick={() => handleGenreClick("movie", genre.id)}
-                    className="group relative h-16 flex items-center justify-center px-6 rounded-2xl bg-card border border-border/50 hover:bg-primary hover:text-primary-foreground transition-all duration-300 text-center backdrop-blur-md will-change-transform active:scale-95 shadow-sm"
-                  >
-                    <span className="font-bold text-xs uppercase tracking-tight">
-                      {genre.name}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </TabsContent>
+            {/* Tab switcher */}
+            <div className="flex items-center gap-2 px-4 pb-3 flex-shrink-0">
+              {(["movie", "tv"] as MediaTab[]).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
+                    activeTab === tab
+                      ? "bg-white text-black border-white"
+                      : "bg-white/6 border-white/10 text-white/50 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  {tab === "movie" ? <Film className="w-3.5 h-3.5" /> : <Tv className="w-3.5 h-3.5" />}
+                  {tab === "movie" ? "Movies" : "TV Shows"}
+                </button>
+              ))}
+            </div>
 
-          <TabsContent value="tv" className="mt-0 outline-none w-full will-change-transform">
-            {isLoading ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {[...Array(12)].map((_, i) => (
-                  <div key={i} className="h-16 bg-muted/30 rounded-2xl animate-pulse" />
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {tvGenres.map((genre) => (
-                  <button
-                    key={genre.id}
-                    onClick={() => handleGenreClick("tv", genre.id)}
-                    className="group relative h-16 flex items-center justify-center px-6 rounded-2xl bg-card border border-border/50 hover:bg-primary hover:text-primary-foreground transition-all duration-300 text-center backdrop-blur-md will-change-transform active:scale-95 shadow-sm"
-                  >
-                    <span className="font-bold text-xs uppercase tracking-tight">
-                      {genre.name}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-      </div>
-    </DialogContent>
-    </Dialog>
-
+            {/* Genre grid — scrollable */}
+            <div className="overflow-y-auto flex-1 overscroll-contain px-2 pb-3">
+              {isLoading ? (
+                <div className="grid grid-cols-2 gap-2 px-2">
+                  {[...Array(12)].map((_, i) => (
+                    <div key={i} className="h-12 bg-white/6 rounded-2xl animate-pulse" />
+                  ))}
+                </div>
+              ) : (
+                <div className="divide-y divide-white/5 rounded-2xl overflow-hidden bg-white/4">
+                  {genres.map((genre, idx) => (
+                    <button
+                      key={genre.id}
+                      onClick={() => handleGenreClick(activeTab, genre.id)}
+                      className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/6 active:bg-white/8 transition-colors text-left"
+                    >
+                      <span className="text-sm font-medium text-white/80 hover:text-white">
+                        {genre.name}
+                      </span>
+                      <span className="text-white/20 text-xs">›</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 }
