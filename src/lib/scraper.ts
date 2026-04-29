@@ -38,8 +38,8 @@ export async function extractEmbedMaster(url: string) {
 
         const providers = [
             { name: 'VIDNEST', fn: () => tryVidnest(path), priority: 2 },
-            { name: 'TOUSTREAM',  fn: () => tryToustream(path),   priority: 1 },
-            { name: 'VYNX',  fn: () => tryVynx(path),   priority: 0 },
+            { name: 'TOUSTREAM',  fn: () => tryToustream(path),   priority: 0 },
+            { name: 'VYNX',  fn: () => tryVynx(path),   priority: 1 },
           ];
 
     // Wait for all results and aggregate
