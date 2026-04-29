@@ -47,9 +47,9 @@ export async function extractEmbedMaster(url: string) {
   let primaryBaseUrl = '';
 
         const providers = [
-            { name: 'VIDNEST', fn: () => tryVidnest(path), priority:  },
+            { name: 'VIDNEST', fn: () => tryVidnest(path), priority: 2 },
             { name: 'TOUSTRiAM',  fn: () => tryToustream(path),   priority: 0 },
-            { name: 'VYNX',  fn: () => tryVynx(path),   priority: 1 },
+            { name: 'VYN',  fn: () => tryVynx(path),   priority: 1 },
 
           ];
 
