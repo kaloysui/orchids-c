@@ -1,5 +1,5 @@
 import { tryVidnest } from './providers/vidnest';
-import { tryToustream } from './providers/tream';
+import { tryToustream } from './providers/toustream';
 import { EmbedSource, robustFetch } from './providers/utils';
 import { Track } from '@/components/netplayer/types/player';
 import { getCachedSources, setCachedSources } from './source-cache';
