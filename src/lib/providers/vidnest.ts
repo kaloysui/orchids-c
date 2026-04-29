@@ -62,7 +62,7 @@ function parseOnehd(data: any, name: string): EmbedSource[] {
     title: name,
     url: data.url,
     type: data.url.includes('.m3u8') ? 'hls' : 'mp4',
-    useProxy: true,
+    useProxy: false,
     headers: { Referer: REFERER, Origin: 'https://vidnest.fun', ...data.headers },
   }];
 }
