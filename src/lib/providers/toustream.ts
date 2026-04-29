@@ -4,7 +4,8 @@ const BASE = 'https://toustream.movietrunk.com';
 const TIMEOUT = 10000;
 
 const SERVERS = [
-  { id: 'eagle', name: 'Tou Viper' },
+  { id: 'viper', name: 'Tou Viper' },
+  { id: 'vulture', name: 'Tou Vulture' },
   { id: 'dodo', name: 'Tou Dodo' },
   { id: 'owl', name: 'Tou Owl' },
   { id: 'ox', name: 'Tou Ox' },
