@@ -3,6 +3,7 @@ import { extractEmbedMaster, resolveFinalSource, decodeObfuscatedUrl, isObfuscat
 import { obfuscateUrl, generateSignature } from '@/lib/protection';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 90;
 
 function wrapWithProxy(url: string, headers?: Record<string, string>): string {
   if (!url || url.startsWith('/api/proxy')) return url;
