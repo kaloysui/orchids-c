@@ -3,6 +3,7 @@ import { tryToustream } from './providers/toustream';
 import { tryVynx } from './providers/vynx';
 import { EmbedSource, robustFetch } from './providers/utils';
 import { Track } from '@/components/netplayer/types/player';
+import { getCachedSources, setCachedSources } from './source-cache';
 
 export type { EmbedSource };
 
@@ -31,7 +32,16 @@ export function isObfuscatedUrl(str: string): boolean {
 
 export async function extractEmbedMaster(url: string) {
   const path = url.startsWith('http') ? new URL(url).pathname.slice(1) : url;
-  
+  const cacheKey = `sources:${path}`;
+
+  // Return cached result if available (7-day TTL)
+  const cached = await getCachedSources(cacheKey);
+  if (cached) {
+    console.log(`[Scraper] Cache HIT for ${path}`);
+    return cached;
+  }
+  console.log(`[Scraper] Cache MISS for ${path} — scraping...`);
+
   const allSources: EmbedSource[] = [];
   const allTracks: Track[] = [];
   let primaryBaseUrl = '';
@@ -81,9 +91,11 @@ export async function extractEmbedMaster(url: string) {
     ]);
     
     if (result && result.sources.length > 0) {
+      // Store in cache async — don't block the response
+      setCachedSources(cacheKey, result);
       return result;
     }
-    
+
     return { sources: [], baseUrl: '', tracks: [] };
   }
 
