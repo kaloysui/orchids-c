@@ -53,7 +53,7 @@ async function fetchServer(
       url: fullUrl,
       type: data.isHls ? 'hls' : 'mp4',
       quality: data.quality || 'Auto',
-      useProxy: true,
+      useProxy: false,
     } as EmbedSource;
 
   } catch {
