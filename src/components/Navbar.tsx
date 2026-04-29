@@ -35,6 +35,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { GenreModal } from "./GenreModal";
 import { AuthModal } from "./AuthModal";
 import { SearchModal } from "./SearchModal";
+import { StudiosModal } from "./StudiosModal";
+import { CollectionsModal } from "./CollectionsModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useGlobalLoading } from "@/hooks/useGlobalLoading";
 
@@ -46,8 +48,8 @@ const mainNavItems = [
 
 const menuModalItems = [
   { name: "Music", href: "/music", icon: Music },
-  { name: "Studios", href: "/studios", icon: LayoutGrid },
-  { name: "Collections", href: "/collections", icon: Library },
+  { name: "Studios", href: "#", icon: LayoutGrid, isStudios: true },
+  { name: "Collections", href: "#", icon: Library, isCollections: true },
   { name: "Watchlist", href: "/watchlist", icon: GalleryVerticalEnd },
   { name: "Live Sports", href: "/live-sports", icon: Trophy },
   { name: "Genres", href: "#", icon: LayoutGrid, isGenre: true },
@@ -64,6 +66,8 @@ export function Navbar() {
   const pathname = usePathname();
   const [isGenreModalOpen, setIsGenreModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isStudiosOpen, setIsStudiosOpen] = useState(false);
+  const [isCollectionsOpen, setIsCollectionsOpen] = useState(false);
   const [authView, setAuthView] = useState<"login" | "register">("login");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -289,7 +293,12 @@ export function Navbar() {
             <div className="grid grid-cols-4 gap-2 px-4 pb-6 pt-1">
               {menuModalItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = !item.isGenre && !item.external && pathname.startsWith(item.href);
+const isActive =
+  !item.isGenre &&
+  !item.isStudios &&
+  !item.isCollections &&
+  !item.external &&
+  pathname.startsWith(item.href);
 
                 if (item.isGenre) {
                   return (
@@ -308,6 +317,44 @@ export function Navbar() {
                     </button>
                   );
                 }
+
+                // ✅ STUDIOS
+if (item.isStudios) {
+  return (
+    <button
+      key={item.name}
+      onClick={() => {
+        setIsMenuOpen(false);
+        setIsStudiosOpen(true);
+      }}
+      className="flex flex-col items-center justify-center gap-2 rounded-2xl py-4 px-2 bg-white/5 hover:bg-white/10 active:scale-95 transition-all duration-200"
+    >
+      <Icon className="w-6 h-6 text-white/60" />
+      <span className="text-[11px] font-medium text-white/50 text-center leading-tight">
+        {item.name}
+      </span>
+    </button>
+  );
+}
+
+// ✅ COLLECTIONS
+if (item.isCollections) {
+  return (
+    <button
+      key={item.name}
+      onClick={() => {
+        setIsMenuOpen(false);
+        setIsCollectionsOpen(true);
+      }}
+      className="flex flex-col items-center justify-center gap-2 rounded-2xl py-4 px-2 bg-white/5 hover:bg-white/10 active:scale-95 transition-all duration-200"
+    >
+      <Icon className="w-6 h-6 text-white/60" />
+      <span className="text-[11px] font-medium text-white/50 text-center leading-tight">
+        {item.name}
+      </span>
+    </button>
+  );
+}
 
                 if (item.external) {
                   return (
@@ -358,6 +405,16 @@ export function Navbar() {
         isOpen={isGenreModalOpen}
         onClose={() => setIsGenreModalOpen(false)}
       />
+
+<StudiosModal
+  isOpen={isStudiosOpen}
+  onClose={() => setIsStudiosOpen(false)}
+/>
+
+<CollectionsModal
+  isOpen={isCollectionsOpen}
+  onClose={() => setIsCollectionsOpen(false)}
+/>
 
       <AuthModal
         isOpen={isAuthModalOpen}
