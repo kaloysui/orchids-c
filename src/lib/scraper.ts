@@ -1,5 +1,6 @@
 import { tryVidnest } from './providers/vidnest';
 import { tryToustream } from './providers/toustream';
+import { tryVynx } from './providers/vynx';
 import { EmbedSource, robustFetch } from './providers/utils';
 import { Track } from '@/components/netplayer/types/player';
 import { getCachedSources, setCachedSources } from './source-cache';
@@ -46,8 +47,10 @@ export async function extractEmbedMaster(url: string) {
   let primaryBaseUrl = '';
 
         const providers = [
-            { name: 'VIDNEST', fn: () => tryVidnest(path), priority: 1 },
+            { name: 'VIDNEST', fn: () => tryVidnest(path), priority:  },
             { name: 'TOUSTRiAM',  fn: () => tryToustream(path),   priority: 0 },
+            { name: 'SHIBAL',  fn: () => tryVynx(path),   priority: 1 },
+
           ];
 
     // Wait for all results and aggregate
