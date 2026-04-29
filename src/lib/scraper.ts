@@ -1,5 +1,4 @@
 import { tryVidnest } from './providers/vidnest';
-import { tryVyla } from './providers/vyla';
 import { tryToustream } from './providers/toustream';
 import { tryVynx } from './providers/vynx';
 import { EmbedSource, robustFetch } from './providers/utils';
@@ -38,8 +37,7 @@ export async function extractEmbedMaster(url: string) {
   let primaryBaseUrl = '';
 
         const providers = [
-            { name: 'VIDNEST', fn: () => tryVidnest(path), priority: 3 },
-            { name: 'VYLA',  fn: () => tryVyla(path),   priority: 2 },
+            { name: 'VIDNEST', fn: () => tryVidnest(path), priority: 2 },
             { name: 'TOUSTREAM',  fn: () => tryToustream(path),   priority: 1 },
             { name: 'VYNX',  fn: () => tryVynx(path),   priority: 0 },
           ];
