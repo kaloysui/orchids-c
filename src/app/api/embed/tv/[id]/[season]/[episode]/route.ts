@@ -3,6 +3,7 @@ import { extractEmbedMaster, resolveFinalSource, decodeObfuscatedUrl, isObfuscat
 import { obfuscateUrl, generateSignature } from '@/lib/protection';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 90;
 
 /**
  * Public Embed API - TV Sources
@@ -33,24 +34,6 @@ function wrapWithProxy(url: string, headers?: Record<string, string>): string {
     proxyUrl += `&headers=${encodeURIComponent(JSON.stringify(headers))}`;
   }
   return proxyUrl;
-}
-
-async function checkUrlStatus(url: string, timeout = 5000): Promise<number> {
-  try {
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), timeout);
-    const response = await fetch(url, {
-      method: 'HEAD',
-      signal: controller.signal,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      },
-    });
-    clearTimeout(id);
-    return response.status;
-  } catch {
-    return 522;
-  }
 }
 
 async function resolveWithTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
@@ -144,21 +127,7 @@ export async function GET(
 
     const validSources = resolvedSources.filter((s): s is NonNullable<typeof s> => s !== null);
 
-    const sourcesWithStatus = await Promise.all(
-      validSources.map(async (s, index) => {
-        if (s.useProxy) return { ...s, status: 200, originalIndex: index };
-        const status = await checkUrlStatus(s.url, 3000);
-        return { ...s, status, originalIndex: index };
-      })
-    );
-
-    const sortedSources = sourcesWithStatus.sort((a, b) => {
-      if (a.status === 200 && b.status !== 200) return -1;
-      if (a.status !== 200 && b.status === 200) return 1;
-      return a.originalIndex - b.originalIndex;
-    });
-
-    const servers = sortedSources.map((s) => {
+    const servers = validSources.map((s) => {
       const finalUrl = s.useProxy ? wrapWithProxy(s.url, s.headers) : obfuscateUrl(s.url);
 
       let flag = s.flag || 'US';
@@ -178,7 +147,7 @@ export async function GET(
       };
     });
 
-    const sources = sortedSources.map((s) =>
+    const sources = validSources.map((s) =>
       s.useProxy ? wrapWithProxy(s.url, s.headers) : obfuscateUrl(s.url)
     );
 
